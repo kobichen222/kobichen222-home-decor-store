@@ -1,0 +1,140 @@
+import Link from "next/link";
+import { AdminHeader, Badge, Card, TableWrap } from "@/components/admin/ui";
+import { ORDER_STATUS_LABELS } from "@/features/orders/queries";
+import { can, requireAdmin } from "@/lib/auth/admin";
+import { createSessionClient } from "@/lib/supabase/server";
+import { formatDate, formatPrice } from "@/lib/utils";
+
+export const metadata = { title: "לוח בקרה" };
+
+// Start of "today" / "this month" in Israel time, as UTC instants.
+function israelStart(unit: "day" | "month"): string {
+  const now = new Date();
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jerusalem", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", hour12: false })
+      .formatToParts(now)
+      .map((p) => [p.type, p.value]),
+  );
+  const offsetHours = (Number(parts.hour) % 24) - now.getUTCHours();
+  const offset = ((offsetHours + 36) % 24) - 12;
+  const day = unit === "day" ? Number(parts.day) : 1;
+  return new Date(Date.UTC(Number(parts.year), Number(parts.month) - 1, day, -offset)).toISOString();
+}
+
+export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
+  const admin = await requireAdmin();
+  const { denied } = await searchParams;
+  const db = await createSessionClient();
+  const seeOrders = can(admin, "orders.view");
+  const seeStock = can(admin, "inventory.manage", "catalog.manage");
+
+  // Sales = orders whose payment was confirmed and that were not cancelled
+  // or returned, counted by payment time. RLS returns nothing to roles
+  // without the matching permission.
+  const SOLD = ["paid", "processing", "preparing", "ready_to_ship", "shipped", "delivered"] as const;
+  const [today, month, fresh, inProgress, done, unpaid, recent, alerts] = await Promise.all([
+    seeOrders ? db.from("orders").select("total").in("status", SOLD).gte("paid_at", israelStart("day")) : null,
+    seeOrders ? db.from("orders").select("total").in("status", SOLD).gte("paid_at", israelStart("month")) : null,
+    seeOrders ? db.from("orders").select("id", { count: "exact", head: true }).eq("status", "paid") : null,
+    seeOrders ? db.from("orders").select("id", { count: "exact", head: true }).in("status", ["processing", "preparing", "ready_to_ship"]) : null,
+    seeOrders ? db.from("orders").select("id", { count: "exact", head: true }).in("status", ["shipped", "delivered"]) : null,
+    seeOrders ? db.from("orders").select("id", { count: "exact", head: true }).eq("status", "pending_payment") : null,
+    seeOrders
+      ? db.from("orders").select("id, order_number, customer_name, total, status, placed_at").neq("status", "pending_payment").order("placed_at", { ascending: false }).limit(6)
+      : null,
+    seeStock
+      ? db.from("stock_alerts").select("id, kind, variant:product_variants(sku, name, product:products(id, name))").is("resolved_at", null).order("created_at", { ascending: false }).limit(8)
+      : null,
+  ]);
+  const sum = (rows: { total: number }[] | null | undefined) => (rows ?? []).reduce((s, r) => s + Number(r.total), 0);
+  const cards = seeOrders
+    ? [
+        ["מכירות היום", formatPrice(sum(today?.data))],
+        ["מכירות החודש", formatPrice(sum(month?.data))],
+        ["הזמנות חדשות", fresh?.count ?? 0],
+        ["הזמנות בטיפול", inProgress?.count ?? 0],
+        ["נשלחו / נמסרו", done?.count ?? 0],
+        ["ממתינות לתשלום", unpaid?.count ?? 0],
+      ]
+    : [];
+
+  return (
+    <>
+      <AdminHeader title="לוח בקרה" description={`מחובר/ת כ־${admin.email}`} />
+      {denied && (
+        <p className="mb-5 rounded-xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm font-semibold text-danger" role="alert">
+          אין לך הרשאה לעמוד שביקשת.
+        </p>
+      )}
+      {cards.length > 0 && (
+        <dl className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+          {cards.map(([label, value]) => (
+            <Card key={label} className="p-4">
+              <dt className="text-xs font-semibold text-ink-soft">{label}</dt>
+              <dd className="mt-1.5 text-2xl font-bold tabular-nums">{value}</dd>
+            </Card>
+          ))}
+        </dl>
+      )}
+      <div className="mt-6 grid gap-6 xl:grid-cols-[1.6fr_1fr]">
+        {seeOrders && (
+          <section>
+            <h2 className="mb-3 font-bold">הזמנות אחרונות</h2>
+            <TableWrap>
+              <thead>
+                <tr>
+                  <th>מספר</th>
+                  <th>לקוח</th>
+                  <th>תאריך</th>
+                  <th>סטטוס</th>
+                  <th>סכום</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(recent?.data ?? []).map((o) => (
+                  <tr key={o.id}>
+                    <td>
+                      <Link href={`/admin/orders/${o.id}`} className="font-bold text-brand hover:underline">
+                        {o.order_number}
+                      </Link>
+                    </td>
+                    <td>{o.customer_name}</td>
+                    <td className="text-ink-soft">{formatDate(o.placed_at, true)}</td>
+                    <td>
+                      <Badge tone={o.status === "cancelled" ? "danger" : o.status === "paid" ? "info" : "neutral"}>{ORDER_STATUS_LABELS[o.status]}</Badge>
+                    </td>
+                    <td className="font-semibold tabular-nums">{formatPrice(o.total)}</td>
+                  </tr>
+                ))}
+                {!recent?.data?.length && (
+                  <tr>
+                    <td colSpan={5} className="py-10 text-center text-ink-soft">
+                      עדיין אין הזמנות
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </TableWrap>
+          </section>
+        )}
+        {seeStock && (
+          <section>
+            <h2 className="mb-3 font-bold">התראות מלאי</h2>
+            <Card className="divide-y divide-line">
+              {(alerts?.data ?? []).map((a) => (
+                <div key={a.id} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
+                  <Link href={`/admin/products/${a.variant?.product?.id}`} className="font-semibold hover:text-brand">
+                    {a.variant?.product?.name}
+                    {a.variant?.name && <span className="font-normal text-ink-soft"> · {a.variant.name}</span>}
+                  </Link>
+                  <Badge tone={a.kind === "out_of_stock" ? "danger" : "warning"}>{a.kind === "out_of_stock" ? "אזל" : "מלאי נמוך"}</Badge>
+                </div>
+              ))}
+              {!alerts?.data?.length && <p className="px-4 py-10 text-center text-sm text-ink-soft">אין התראות פתוחות</p>}
+            </Card>
+          </section>
+        )}
+      </div>
+    </>
+  );
+}

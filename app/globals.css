@@ -1,0 +1,110 @@
+@import "tailwindcss";
+@import "@fontsource-variable/heebo";
+@import "@fontsource-variable/assistant";
+
+@theme {
+  --color-cream: #faf9f6;
+  --color-sand: #f2efea;
+  --color-ink: #242424;
+  --color-ink-soft: #5b5650;
+  --color-brand: #705b4b;
+  --color-brand-dark: #5a483b;
+  --color-gold: #b49a76;
+  --color-line: #e8e5e1;
+  --color-danger: #a3392f;
+  --color-success: #3f6b4f;
+
+  --font-sans: "Assistant Variable", system-ui, "Segoe UI", Arial, sans-serif;
+  --font-display: "Heebo Variable", "Assistant Variable", system-ui, sans-serif;
+
+  --shadow-soft: 0 10px 40px -18px rgb(59 47 37 / 0.28);
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background: var(--color-cream);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+  button,
+  [role="button"],
+  summary {
+    cursor: pointer;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@utility container-page {
+  width: 100%;
+  max-width: 82rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  @media (min-width: 640px) {
+    padding-inline: 1.5rem;
+  }
+  @media (min-width: 1024px) {
+    padding-inline: 2.5rem;
+  }
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes marquee-fade {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  8%,
+  92% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes drawer-in {
+  from {
+    transform: translateX(var(--drawer-from, -100%));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

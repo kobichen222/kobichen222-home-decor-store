@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Dependency audit
+        run: npm audit --omit=dev --audit-level=high
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+
+      # Everything below runs against a throw-away local Supabase stack:
+      # the migrations are applied from scratch and the demo seed is loaded.
+      - name: Start Supabase
+        run: npx supabase start -x studio,imgproxy,logflare,vector,supavisor,edge-runtime,realtime,postgres-meta,mailpit
+      - name: Write .env.local
+        run: |
+          npx supabase status -o env > status.env
+          {
+            echo "NEXT_PUBLIC_SITE_URL=http://localhost:3100"
+            echo "NEXT_PUBLIC_SUPABASE_URL=$(grep '^API_URL=' status.env | cut -d= -f2- | tr -d '"')"
+            echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$(grep '^PUBLISHABLE_KEY=' status.env | cut -d= -f2- | tr -d '"')"
+            echo "SUPABASE_SECRET_KEY=$(grep '^SECRET_KEY=' status.env | cut -d= -f2- | tr -d '"')"
+            echo "PAYMENT_PROVIDER=mock"
+            echo "PAYMENT_WEBHOOK_SECRET=ci-webhook-secret"
+            echo "CRON_SECRET=ci-cron-secret"
+          } > .env.local
+          rm status.env
+      - name: Database integration tests (pricing, stock, payments, RLS)
+        run: npm run test:integration
+      - name: Reset demo data and create test admins
+        run: |
+          npx supabase db reset
+          npm run admin:create -- owner@example.com local-owner-password
+          npm run admin:create -- catalog@example.com local-catalog-password catalog_manager
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+      - name: End-to-end tests (build + critical flows)
+        run: npm run test:e2e
