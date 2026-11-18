@@ -25,6 +25,8 @@ export type CartSummary = {
   discount: number;
   promotion: { name: string; discount: number } | null;
   coupon_discount: number;
+  business_discount?: number;
+  business_percent?: number;
   coupon: { code: string; valid: boolean; message?: string; kind?: string; description?: string | null } | null;
   shipping: number;
   shipping_method: { id: string; name: string; kind: string; requires_address: boolean } | null;

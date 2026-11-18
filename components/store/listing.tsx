@@ -1,6 +1,8 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { after } from "next/server";
 import { getFacets, searchProducts } from "@/features/catalog/queries";
+import { createServiceClient } from "@/lib/supabase/service";
 import { hasActiveFilters, listingQuery, parseListingParams, type RawSearchParams } from "@/features/catalog/params";
 import { PAGE_SIZE } from "@/features/catalog/types";
 import { buttonClass } from "@/components/ui/button";
@@ -74,6 +76,13 @@ export async function Listing({
     getFacets({ ...scope, q: filters.q }),
     searchProducts({ ...scope, ...filters }),
   ]);
+  // Search terms feed "popular searches" (first page of a plain search only).
+  if (filters.q && filters.page === 1 && !scope.categoryId && !scope.collectionId) {
+    const q = filters.q.toLowerCase().slice(0, 60);
+    after(async () => {
+      await createServiceClient().from("search_log").insert({ q, results: total });
+    });
+  }
   const activeCount =
     filters.valueIds.length + Number(filters.minPrice !== null || filters.maxPrice !== null) + Number(filters.onSale) + Number(filters.inStock);
 

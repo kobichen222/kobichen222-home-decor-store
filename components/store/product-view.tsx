@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import type { ProductDetail, ProductVariant } from "@/features/catalog/types";
 import { cn, formatPrice } from "@/lib/utils";
 import { useCart } from "./cart-context";
+import { WishlistButton } from "./wishlist";
 
 function optionKeys(variants: ProductVariant[]): string[] {
   const keys: string[] = [];
@@ -14,7 +15,7 @@ function optionKeys(variants: ProductVariant[]): string[] {
   return keys;
 }
 
-export function ProductView({ product, children }: { product: ProductDetail; children?: React.ReactNode }) {
+export function ProductView({ product, rating, children }: { product: ProductDetail; rating?: { average: number | null; count: number }; children?: React.ReactNode }) {
   const router = useRouter();
   const { add, pending, error, clearError } = useCart();
   const keys = React.useMemo(() => optionKeys(product.variants), [product.variants]);
@@ -152,6 +153,12 @@ export function ProductView({ product, children }: { product: ProductDetail; chi
       <div className="lg:sticky lg:top-44 lg:self-start">
         {product.brand && <p className="text-sm font-semibold tracking-wide text-brand">{product.brand.name}</p>}
         <h1 className="mt-1 text-3xl font-bold tracking-tight lg:text-[2.3rem]">{product.name}</h1>
+        {rating?.average != null && rating.count > 0 && (
+          <a href="#reviews" className="mt-2 inline-flex items-center gap-1.5 text-sm text-ink-soft hover:text-brand">
+            <span className="text-gold" aria-hidden="true">{"★".repeat(Math.round(rating.average))}{"☆".repeat(5 - Math.round(rating.average))}</span>
+            {rating.average} ({rating.count} חוות דעת)
+          </a>
+        )}
         <p className="mt-1.5 text-sm text-ink-soft">
           מק״ט: <span dir="ltr">{variant?.sku ?? product.sku}</span>
         </p>
@@ -264,9 +271,12 @@ export function ProductView({ product, children }: { product: ProductDetail; chi
               )}
             </Button>
           </div>
-          <Button variant="outline" size="lg" className="w-full" disabled={!purchasable || pending} onClick={() => submit(true)}>
-            קנייה מהירה
-          </Button>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Button variant="outline" size="lg" className="w-full" disabled={!purchasable || pending} onClick={() => submit(true)}>
+              קנייה מהירה
+            </Button>
+            <WishlistButton productId={product.id} name={product.name} variant="full" />
+          </div>
           {error && (
             <p className="text-sm font-semibold text-danger" role="alert">
               {error}

@@ -10,12 +10,14 @@ type AdminUser = { user_id: string; email: string; last_sign_in_at: string | nul
 export default async function UsersPage() {
   const admin = await requireAdmin("users.manage");
   const db = await createSessionClient();
-  const [{ data: users, error }, { data: roles }, { data: matrix }, { data: perms }] = await Promise.all([
+  const [{ data: users, error }, { data: roles }, { data: matrix }, { data: perms }, { data: mfa }] = await Promise.all([
     db.rpc("admin_list_users"),
     db.from("admin_roles").select("id, code, name, description").order("created_at"),
     db.from("admin_role_permissions").select("role_id, permission_code"),
     db.from("admin_permissions").select("code, description").order("code"),
+    db.rpc("admin_mfa_status"),
   ]);
+  const mfaOn = (mfa ?? {}) as Record<string, boolean>;
   if (error) throw new Error(error.message);
   const list = (users as unknown as AdminUser[]) ?? [];
 
@@ -31,6 +33,7 @@ export default async function UsersPage() {
           <Card key={u.user_id} className="flex flex-wrap items-start justify-between gap-4 p-4">
             <div>
               <p className="font-semibold" dir="ltr">{u.email}</p>
+              <p className={`text-xs font-semibold ${mfaOn[u.user_id] ? "text-success" : "text-danger"}`}>{mfaOn[u.user_id] ? "✓ אימות דו־שלבי פעיל" : "ללא אימות דו־שלבי"}</p>
               <p className="text-xs text-ink-soft">כניסה אחרונה: {u.last_sign_in_at ? formatDate(u.last_sign_in_at, true) : "טרם התחבר"}{u.user_id === admin.userId && " · זה את/ה"}</p>
             </div>
             <div className="min-w-0 flex-1 sm:max-w-2xl">

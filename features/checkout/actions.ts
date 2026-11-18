@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { readCartId } from "@/features/cart/server";
+import { getCustomer } from "@/lib/auth/customer";
 import { getPaymentProvider, isMockPayments } from "@/lib/payments";
 import { createServiceClient } from "@/lib/supabase/service";
 import { checkoutSchema, fieldErrors, type CheckoutErrors } from "@/lib/validations/checkout";
@@ -81,6 +82,7 @@ export async function placeOrder(_prev: CheckoutState, formData: FormData): Prom
       : (null as never),
     p_shipping_method_id: method.id,
     p_note: v.note,
+    p_user_id: (await getCustomer())?.id,
   });
   if (error) return { message: orderErrorMessage(error.message) };
 

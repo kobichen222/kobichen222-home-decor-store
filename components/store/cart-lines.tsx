@@ -138,6 +138,12 @@ export function CartTotals({ showShipping = false }: { showShipping?: boolean })
           <dd className="tabular-nums">−{formatPrice(cart.promotion.discount)}</dd>
         </div>
       )}
+      {(cart.business_discount ?? 0) > 0 && (
+        <div className="flex justify-between text-success">
+          <dt>הנחה עסקית ({cart.business_percent}%)</dt>
+          <dd className="tabular-nums">−{formatPrice(cart.business_discount ?? 0)}</dd>
+        </div>
+      )}
       {cart.coupon_discount > 0 && (
         <div className="flex justify-between text-success">
           <dt>הנחת קופון</dt>

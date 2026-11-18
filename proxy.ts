@@ -20,7 +20,18 @@ export async function proxy(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const signedIn = !!data?.claims?.sub;
 
-  const isLogin = request.nextUrl.pathname === "/admin/login";
+  const path = request.nextUrl.pathname;
+  if (path.startsWith("/account")) {
+    const open = path === "/account/login" || path === "/account/register";
+    if (!signedIn && !open) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/account/login";
+      url.search = `?next=${encodeURIComponent(path)}`;
+      return NextResponse.redirect(url);
+    }
+    return response;
+  }
+  const isLogin = path === "/admin/login";
   if (!signedIn && !isLogin) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin/login";
@@ -30,4 +41,4 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
-export const config = { matcher: ["/admin/:path*"] };
+export const config = { matcher: ["/admin/:path*", "/account/:path*"] };

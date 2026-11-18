@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { redirectOrNotFound } from "@/lib/redirects";
 import { Suspense } from "react";
 import { Listing, ListingSkeleton } from "@/components/store/listing";
 import { PageHeader } from "@/components/store/page-header";
@@ -25,7 +25,7 @@ export async function generateMetadata({ params, searchParams }: PageProps<"/col
 async function CollectionContent({ params, searchParams }: PageProps<"/collections/[slug]">) {
   const { slug } = await params;
   const collection = (await getCollections()).find((c) => c.slug === slug);
-  if (!collection) notFound();
+  if (!collection) return redirectOrNotFound(`/collections/${slug}`);
   return (
     <>
       <PageHeader

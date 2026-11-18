@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/release-reservations",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/abandoned-carts",
+      "schedule": "0 9 * * *"
     }
   ]
 }

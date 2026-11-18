@@ -1,10 +1,9 @@
 "use client";
-import { Menu, Search } from "lucide-react";
-import Form from "next/form";
+import { Menu } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
 import { Drawer } from "@/components/ui/drawer";
-import { Input } from "@/components/ui/field";
+import { SearchBox } from "./search-box";
 
 type Node = { name: string; slug: string; children: { name: string; slug: string }[] };
 
@@ -23,10 +22,7 @@ export function MobileMenu({ categories }: { categories: Node[] }) {
       </button>
       <Drawer open={open} onOpenChange={setOpen} title="תפריט" side="start">
         <div className="px-5 py-5">
-          <Form action="/shop" onSubmit={close} className="relative">
-            <Search className="pointer-events-none absolute start-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft" />
-            <Input name="q" type="search" placeholder="חיפוש מוצרים" aria-label="חיפוש מוצרים" className="ps-10" />
-          </Form>
+          <SearchBox onNavigate={close} />
           <nav aria-label="קטגוריות" className="mt-5">
             <ul className="divide-y divide-line">
               <li>

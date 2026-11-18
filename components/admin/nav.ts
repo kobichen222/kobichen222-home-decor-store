@@ -10,6 +10,7 @@ export const ADMIN_NAV: NavGroup[] = [
     items: [
       { label: "הזמנות", href: "/admin/orders", permissions: ["orders.view"] },
       { label: "לקוחות", href: "/admin/customers", permissions: ["customers.view"] },
+      { label: "חשבונות עסקיים", href: "/admin/business-accounts", permissions: ["customers.manage"] },
       { label: "הצעות מחיר", href: "/admin/quotes", permissions: ["orders.manage"] },
       { label: "החזרות", href: "/admin/returns", permissions: ["orders.view"] },
     ],
@@ -42,6 +43,9 @@ export const ADMIN_NAV: NavGroup[] = [
       { label: "באנרים", href: "/admin/banners", permissions: ["content.manage"] },
       { label: "בלוג", href: "/admin/blog", permissions: ["content.manage"] },
       { label: "קטגוריות בלוג", href: "/admin/blog-categories", permissions: ["content.manage"] },
+      { label: "חוות דעת", href: "/admin/reviews", permissions: ["content.manage"] },
+      { label: "שאלות ותשובות", href: "/admin/faqs", permissions: ["content.manage"] },
+      { label: "הפניות 301", href: "/admin/redirects", permissions: ["content.manage"] },
     ],
   },
   {
@@ -49,6 +53,7 @@ export const ADMIN_NAV: NavGroup[] = [
     items: [
       { label: "דוחות מכירה", href: "/admin/reports", permissions: ["reports.view", "finance.view"] },
       { label: "דוחות מוצרים", href: "/admin/reports/products", permissions: ["reports.view", "catalog.manage"] },
+      { label: "ייבוא וייצוא", href: "/admin/import-export", permissions: ["catalog.manage", "orders.view", "customers.view", "inventory.manage"] },
     ],
   },
   {
@@ -58,6 +63,7 @@ export const ADMIN_NAV: NavGroup[] = [
       { label: "משלוחים", href: "/admin/shipping", permissions: ["shipping.manage"] },
       { label: "משתמשים והרשאות", href: "/admin/users", permissions: ["users.manage"] },
       { label: "יומן פעילות", href: "/admin/audit-log", permissions: ["settings.manage", "users.manage"] },
+      { label: "אבטחת החשבון (2FA)", href: "/admin/security" },
     ],
   },
 ];

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { redirectOrNotFound } from "@/lib/redirects";
 import { Suspense } from "react";
 import { StoreImage } from "@/components/shared/store-image";
 import { Breadcrumbs, JsonLd } from "@/components/store/page-header";
@@ -26,8 +26,9 @@ export async function generateMetadata({ params }: PageProps<"/blog/[slug]">): P
 }
 
 async function Post({ params }: PageProps<"/blog/[slug]">) {
-  const post = await getBlogPost((await params).slug);
-  if (!post) notFound();
+  const { slug } = await params;
+  const post = await getBlogPost(slug);
+  if (!post) return redirectOrNotFound(`/blog/${slug}`);
   return (
     <article className="container-page max-w-3xl py-8 lg:py-12">
       <JsonLd

@@ -76,6 +76,7 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
   return (
     <>
       <AdminHeader title="לוח בקרה" description={`מחובר/ת כ־${admin.email}`} />
+      <MfaReminder />
       {denied && (
         <p className="mb-5 rounded-xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm font-semibold text-danger" role="alert">
           אין לך הרשאה לעמוד שביקשת.
@@ -160,5 +161,17 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
         )}
       </div>
     </>
+  );
+}
+
+async function MfaReminder() {
+  const db = await createSessionClient();
+  const { data } = await db.auth.mfa.listFactors();
+  if (data?.totp.some((f) => f.status === "verified")) return null;
+  return (
+    <p className="mb-5 rounded-xl border border-gold/50 bg-gold/10 px-4 py-3 text-sm">
+      מומלץ להפעיל אימות דו־שלבי לחשבון הניהול.{" "}
+      <Link href="/admin/security" className="font-semibold text-brand underline">להפעלה</Link>
+    </p>
   );
 }

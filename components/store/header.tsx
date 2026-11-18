@@ -1,11 +1,11 @@
-import { Phone, Search } from "lucide-react";
-import Form from "next/form";
+import { Heart, Phone, Search, User } from "lucide-react";
 import Link from "next/link";
 import { getCategories } from "@/features/catalog/queries";
 import { getAnnouncements, getStoreSettings } from "@/features/cms/queries";
 import { AnnouncementBar } from "./announcement-bar";
 import { CartButton } from "./cart-drawer";
 import { MobileMenu } from "./mobile-menu";
+import { SearchBox } from "./search-box";
 
 export async function Header() {
   const [settings, categories, announcements] = await Promise.all([getStoreSettings(), getCategories(), getAnnouncements()]);
@@ -27,24 +27,24 @@ export async function Header() {
           <span className="text-gold">.</span>
         </Link>
 
-        <Form action="/shop" role="search" className="relative mx-auto hidden w-full max-w-md lg:block">
-          <Search className="pointer-events-none absolute start-4 top-1/2 size-4 -translate-y-1/2 text-ink-soft" />
-          <input
-            name="q"
-            type="search"
-            placeholder="מה תרצו לעצב היום?"
-            aria-label="חיפוש מוצרים"
-            className="h-11 w-full rounded-full border border-line bg-white ps-11 pe-4 text-[0.95rem] placeholder:text-ink-soft/70 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
-          />
-        </Form>
+        <SearchBox className="mx-auto hidden w-full max-w-md lg:block" />
 
         <div className="ms-auto flex items-center lg:ms-0">
           <Link href="/shop" className="grid size-11 place-items-center rounded-full hover:bg-sand lg:hidden" aria-label="חיפוש מוצרים">
             <Search className="size-[1.35rem]" strokeWidth={1.6} />
           </Link>
+          <Link href="/business" className="hidden h-11 items-center rounded-full px-3 text-sm font-semibold hover:bg-sand xl:flex">
+            לעסקים
+          </Link>
           <Link href="/contact" className="hidden h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold hover:bg-sand lg:flex">
             <Phone className="size-4" strokeWidth={1.6} />
             יצירת קשר
+          </Link>
+          <Link href="/account/wishlist" className="hidden size-11 place-items-center rounded-full hover:bg-sand sm:grid" aria-label="המועדפים שלי">
+            <Heart className="size-[1.3rem]" strokeWidth={1.6} />
+          </Link>
+          <Link href="/account" className="grid size-11 place-items-center rounded-full hover:bg-sand" aria-label="האזור האישי">
+            <User className="size-[1.35rem]" strokeWidth={1.6} />
           </Link>
           <CartButton />
         </div>

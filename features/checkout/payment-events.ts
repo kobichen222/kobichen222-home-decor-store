@@ -1,5 +1,7 @@
 import "server-only";
 import { revalidateTag } from "next/cache";
+import { after } from "next/server";
+import { notifyOrderPaid } from "@/lib/email/notify";
 import { createServiceClient } from "@/lib/supabase/service";
 import type { PaymentEvent } from "@/lib/payments/types";
 
@@ -35,6 +37,7 @@ export async function processPaymentEvent(event: PaymentEvent): Promise<PaymentO
       outcome = "ignored";
     } else {
       outcome = (data as { status: PaymentOutcome }).status;
+      if (outcome === "paid") after(() => notifyOrderPaid(event.orderId));
     }
   } else {
     const { data, error } = await db.rpc("fail_order_payment", {

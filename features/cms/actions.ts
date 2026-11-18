@@ -1,5 +1,10 @@
 "use server";
 import { z } from "zod";
+import { after } from "next/server";
+import { sendEmail } from "@/lib/email";
+import { storeInfo } from "@/lib/email/notify";
+import { adminLead } from "@/lib/email/templates";
+import { allow, clientIp } from "@/lib/rate-limit";
 import { createServiceClient } from "@/lib/supabase/service";
 
 const schema = z.object({ email: z.email().max(254), consent: z.literal("on") });
@@ -30,7 +35,13 @@ export async function submitContact(_prev: { ok: boolean; error?: string } | nul
   if (formData.get("website")) return { ok: true }; // bot filled the honeypot
   const parsed = contactSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
+  if (!(await allow("contact", await clientIp(), 5, 3600))) return { ok: false, error: "נשלחו יותר מדי פניות. נסו שוב מאוחר יותר או התקשרו אלינו." };
   const { name, ...rest } = parsed.data;
-  const { error } = await createServiceClient().from("leads").insert({ full_name: name, ...rest });
-  return error ? { ok: false, error: "השליחה נכשלה. נסו שוב או התקשרו אלינו." } : { ok: true };
+  const { data: lead, error } = await createServiceClient().from("leads").insert({ full_name: name, ...rest }).select("id").single();
+  if (error || !lead) return { ok: false, error: "השליחה נכשלה. נסו שוב או התקשרו אלינו." };
+  after(async () => {
+    const store = await storeInfo();
+    if (store.email) await sendEmail({ to: store.email, tag: "admin_lead", ...adminLead(store.name, { ...parsed.data, full_name: name, email: parsed.data.email, id: lead.id }) });
+  });
+  return { ok: true };
 }

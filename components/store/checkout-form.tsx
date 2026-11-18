@@ -32,7 +32,12 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
   );
 }
 
-export function CheckoutForm({ options }: { options: ShippingOption[] }) {
+export type CheckoutPrefill = {
+  name?: string; email?: string; phone?: string;
+  address?: { city: string; street: string; house_number: string; apartment: string | null; zip: string | null } | null;
+} | null;
+
+export function CheckoutForm({ options, prefill }: { options: ShippingOption[]; prefill?: CheckoutPrefill }) {
   const { state, pending, onSubmit } = useFormAction(placeOrder);
   const [methodId, setMethodId] = React.useState(options[0]?.id ?? "");
   const [type, setType] = React.useState<"private" | "business">("private");
@@ -52,13 +57,13 @@ export function CheckoutForm({ options }: { options: ShippingOption[] }) {
         <Step n={1} title="פרטי לקוח">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="שם מלא" htmlFor="name" required error={e.name}>
-              <Input id="name" name="name" autoComplete="name" required aria-invalid={!!e.name} />
+              <Input id="name" name="name" autoComplete="name" defaultValue={prefill?.name} required aria-invalid={!!e.name} />
             </Field>
             <Field label="טלפון נייד" htmlFor="phone" required error={e.phone}>
-              <Input id="phone" name="phone" type="tel" inputMode="tel" autoComplete="tel" dir="ltr" className="text-end" required aria-invalid={!!e.phone} />
+              <Input id="phone" name="phone" defaultValue={prefill?.phone} type="tel" inputMode="tel" autoComplete="tel" dir="ltr" className="text-end" required aria-invalid={!!e.phone} />
             </Field>
             <Field label="דוא״ל" htmlFor="email" required error={e.email} hint="לכאן יישלח אישור ההזמנה" className="sm:col-span-2">
-              <Input id="email" name="email" type="email" autoComplete="email" dir="ltr" className="text-end" required aria-invalid={!!e.email} />
+              <Input id="email" name="email" defaultValue={prefill?.email} type="email" autoComplete="email" dir="ltr" className="text-end" required aria-invalid={!!e.email} />
             </Field>
             <fieldset className="sm:col-span-2">
               <legend className="mb-2 text-sm font-semibold">סוג לקוח</legend>
@@ -132,19 +137,19 @@ export function CheckoutForm({ options }: { options: ShippingOption[] }) {
           {option.requires_address && (
             <div className="mt-6 grid grid-cols-6 gap-4">
               <Field label="עיר" htmlFor="city" required error={e.city} className="col-span-6 sm:col-span-3">
-                <Input id="city" name="city" autoComplete="address-level2" aria-invalid={!!e.city} />
+                <Input id="city" name="city" defaultValue={prefill?.address?.city ?? undefined} autoComplete="address-level2" aria-invalid={!!e.city} />
               </Field>
               <Field label="רחוב" htmlFor="street" required error={e.street} className="col-span-6 sm:col-span-3">
-                <Input id="street" name="street" autoComplete="address-line1" aria-invalid={!!e.street} />
+                <Input id="street" name="street" defaultValue={prefill?.address?.street ?? undefined} autoComplete="address-line1" aria-invalid={!!e.street} />
               </Field>
               <Field label="מספר בית" htmlFor="house_number" required error={e.house_number} className="col-span-2">
-                <Input id="house_number" name="house_number" aria-invalid={!!e.house_number} />
+                <Input id="house_number" name="house_number" defaultValue={prefill?.address?.house_number ?? undefined} aria-invalid={!!e.house_number} />
               </Field>
               <Field label="דירה" htmlFor="apartment" className="col-span-2">
-                <Input id="apartment" name="apartment" />
+                <Input id="apartment" name="apartment" defaultValue={prefill?.address?.apartment ?? undefined} />
               </Field>
               <Field label="מיקוד" htmlFor="zip" error={e.zip} className="col-span-2">
-                <Input id="zip" name="zip" inputMode="numeric" autoComplete="postal-code" dir="ltr" className="text-end" aria-invalid={!!e.zip} />
+                <Input id="zip" name="zip" defaultValue={prefill?.address?.zip ?? undefined} inputMode="numeric" autoComplete="postal-code" dir="ltr" className="text-end" aria-invalid={!!e.zip} />
               </Field>
               <Field label="הערות לשליח" htmlFor="address_notes" className="col-span-6">
                 <Input id="address_notes" name="address_notes" placeholder="קומה, קוד כניסה…" />
@@ -192,6 +197,12 @@ export function CheckoutForm({ options }: { options: ShippingOption[] }) {
             <div className="flex justify-between text-success">
               <dt>מבצע: {summary.promotion.name}</dt>
               <dd className="tabular-nums">−{formatPrice(summary.promotion.discount)}</dd>
+            </div>
+          )}
+          {(summary.business_discount ?? 0) > 0 && (
+            <div className="flex justify-between text-success">
+              <dt>הנחה עסקית ({summary.business_percent}%)</dt>
+              <dd className="tabular-nums">−{formatPrice(summary.business_discount ?? 0)}</dd>
             </div>
           )}
           {summary.coupon_discount > 0 && (

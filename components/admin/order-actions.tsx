@@ -31,6 +31,10 @@ export function OrderStatusForm({ orderId, status, tracking }: { orderId: string
       <Field label="מספר מעקב" htmlFor="tracking">
         <Input id="tracking" name="tracking" defaultValue={tracking ?? ""} dir="ltr" />
       </Field>
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="notify" defaultChecked className="size-4 accent-[var(--color-brand)]" />
+        לשלוח עדכון ללקוח בדוא״ל (נשלחה / נמסרה / מוכנה / בוטלה)
+      </label>
       {state?.message && (
         <p role="status" className={`text-sm font-semibold ${state.ok ? "text-success" : "text-danger"}`}>
           {state.message}

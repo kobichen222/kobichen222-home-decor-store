@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { redirectOrNotFound } from "@/lib/redirects";
 import { Suspense } from "react";
 import { Listing, ListingSkeleton } from "@/components/store/listing";
 import { PageHeader, type Crumb } from "@/components/store/page-header";
@@ -29,7 +29,7 @@ export async function generateMetadata({ params, searchParams }: PageProps<"/cat
 async function CategoryContent({ params, searchParams }: PageProps<"/category/[slug]">) {
   const { slug } = await params;
   const [category, all] = await Promise.all([getCategoryBySlug(slug), getCategories()]);
-  if (!category) notFound();
+  if (!category) return redirectOrNotFound(`/category/${slug}`);
   const parent = all.find((c) => c.id === category.parent_id);
   const children = all.filter((c) => c.parent_id === category.id);
   const crumbs: Crumb[] = [

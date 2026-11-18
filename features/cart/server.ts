@@ -1,5 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
+import { getCustomer } from "@/lib/auth/customer";
 import { createServiceClient } from "@/lib/supabase/service";
 import { EMPTY_CART, type CartSummary } from "./types";
 
@@ -21,10 +22,23 @@ export async function readCartId(): Promise<string | null> {
 }
 
 /** Only callable where cookies are writable (Server Actions / Route Handlers). */
+/**
+ * The cart belongs to whoever is signed in right now (business pricing
+ * depends on it), and to nobody after sign-out.
+ */
+export async function syncCartOwner(cartId: string): Promise<void> {
+  const userId = (await getCustomer())?.id ?? null;
+  await createServiceClient().from("carts").update({ user_id: userId }).eq("id", cartId);
+}
+
 export async function getOrCreateCartId(): Promise<string> {
   const existing = await readCartId();
-  if (existing) return existing;
-  const { data, error } = await createServiceClient().from("carts").insert({}).select("id, token").single();
+  if (existing) {
+    await syncCartOwner(existing);
+    return existing;
+  }
+  const userId = (await getCustomer())?.id ?? null;
+  const { data, error } = await createServiceClient().from("carts").insert({ user_id: userId }).select("id, token").single();
   if (error || !data) throw new Error(`cart create failed: ${error?.message}`);
   (await cookies()).set(CART_COOKIE, data.token, {
     httpOnly: true,

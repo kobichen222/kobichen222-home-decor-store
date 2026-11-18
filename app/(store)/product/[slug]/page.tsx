@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { redirectOrNotFound } from "@/lib/redirects";
 import { Suspense } from "react";
 import { Breadcrumbs, JsonLd } from "@/components/store/page-header";
 import { ProductGrid } from "@/components/store/product-card";
 import { ProductView } from "@/components/store/product-view";
+import { ProductReviews } from "@/components/store/reviews";
+import { getProductReviews } from "@/features/catalog/reviews";
 import { getAllProductSlugs, getProductBySlug, getRelatedProducts } from "@/features/catalog/queries";
 import type { ProductDetail } from "@/features/catalog/types";
 import { siteUrl } from "@/lib/env";
@@ -106,9 +108,10 @@ async function Related({ productId, categorySlug }: { productId: string; categor
 async function ProductContent({ params }: Pick<PageProps<"/product/[slug]">, "params">) {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
-  if (!product) notFound();
+  if (!product) return redirectOrNotFound(`/product/${slug}`);
 
   const primary = product.categories.find((c) => c.is_primary) ?? product.categories[0] ?? null;
+  const feedback = await getProductReviews(product.id);
   const url = `${siteUrl()}/product/${product.slug}`;
   const absolute = (path: string) => (path.startsWith("http") ? path : siteUrl() + path);
   const prices = product.variants.map((v) => v.price);
@@ -121,6 +124,15 @@ async function ProductContent({ params }: Pick<PageProps<"/product/[slug]">, "pa
     description: product.short_description ?? undefined,
     image: product.images.map((i) => absolute(i.url)),
     brand: product.brand ? { "@type": "Brand", name: product.brand.name } : undefined,
+    aggregateRating:
+      feedback.count > 0 ? { "@type": "AggregateRating", ratingValue: feedback.average, reviewCount: feedback.count } : undefined,
+    review: feedback.reviews.slice(0, 5).map((r) => ({
+      "@type": "Review",
+      author: { "@type": "Person", name: r.author_name },
+      datePublished: r.created_at.slice(0, 10),
+      reviewRating: { "@type": "Rating", ratingValue: r.rating, bestRating: 5 },
+      reviewBody: r.body ?? undefined,
+    })),
     video: product.videos.length
       ? product.videos.map((v) => ({
           "@type": "VideoObject",
@@ -156,10 +168,11 @@ async function ProductContent({ params }: Pick<PageProps<"/product/[slug]">, "pa
         ]}
       />
       <div className="mt-6">
-        <ProductView product={product}>
+        <ProductView product={product} rating={{ average: feedback.average, count: feedback.count }}>
           <ProductInfo product={product} />
         </ProductView>
       </div>
+      <ProductReviews productId={product.id} {...feedback} />
       <Suspense fallback={null}>
         <Related productId={product.id} categorySlug={primary?.slug ?? null} />
       </Suspense>

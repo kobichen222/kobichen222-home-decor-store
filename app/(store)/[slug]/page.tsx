@@ -1,6 +1,6 @@
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { redirectOrNotFound } from "@/lib/redirects";
 import { Suspense } from "react";
 import { PageHeader } from "@/components/store/page-header";
 import { ContactForm } from "@/components/store/contact-form";
@@ -58,7 +58,7 @@ async function Contact() {
 async function Content({ params }: PageProps<"/[slug]">) {
   const { slug } = await params;
   const page = slug === "home" ? null : await getPage(slug);
-  if (!page && slug !== "contact") notFound();
+  if (!page && slug !== "contact") return redirectOrNotFound(`/${slug}`);
   const title = page?.title ?? "יצירת קשר";
   return (
     <>

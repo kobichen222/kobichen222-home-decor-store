@@ -2,6 +2,7 @@ import Link from "next/link";
 import { StoreImage } from "@/components/shared/store-image";
 import type { ProductCard as ProductCardData } from "@/features/catalog/types";
 import { formatPrice } from "@/lib/utils";
+import { WishlistButton } from "./wishlist";
 
 export function ProductCard({ product, priority = false }: { product: ProductCardData; priority?: boolean }) {
   const onSale = product.discount_percent > 0;
@@ -25,6 +26,9 @@ export function ProductCard({ product, priority = false }: { product: ProductCar
             className="object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100 max-md:hidden"
           />
         )}
+        <div className="absolute end-3 top-3 z-10">
+          <WishlistButton productId={product.id} name={product.name} />
+        </div>
         <div className="absolute start-3 top-3 flex flex-col items-start gap-1.5">
           {onSale && (
             <span className="rounded-full bg-brand px-2.5 py-1 text-xs font-bold text-cream">−{product.discount_percent}%</span>

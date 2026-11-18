@@ -1,6 +1,8 @@
 "use server";
 import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
+import { notifyOrderStatus } from "@/lib/email/notify";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth/admin";
 import { publicEnv } from "@/lib/env";
@@ -386,7 +388,11 @@ export async function setOrderStatus(_prev: FormState, formData: FormData): Prom
     return { message: error.message.includes("ORDER_NOT_PAID") ? "לא ניתן לקדם הזמנה שלא שולמה" : dbMessage(error) };
   }
   updateTag("catalog");
-  return { ok: true, message: "הסטטוס עודכן" };
+  // Customers hear about the steps that matter to them.
+  const CUSTOMER_LABELS: Record<string, string> = { shipped: "נשלחה", delivered: "נמסרה", ready_to_ship: "מוכנה לאיסוף/משלוח", cancelled: "בוטלה" };
+  const label = CUSTOMER_LABELS[parsed.data.status];
+  if (label && formData.get("notify") === "on") after(() => notifyOrderStatus(parsed.data.id, label).then(() => undefined));
+  return { ok: true, message: label && formData.get("notify") === "on" ? "הסטטוס עודכן ונשלחה הודעה ללקוח" : "הסטטוס עודכן" };
 }
 
 export async function addOrderNote(_prev: FormState, formData: FormData): Promise<FormState> {

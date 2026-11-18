@@ -20,6 +20,10 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  experimental: {
+    // Vercel accepts request bodies up to 4.5MB; photos are resized in the browser first.
+    serverActions: { bodySizeLimit: "4mb" },
+  },
   // Public values only. The secret key is never listed here.
   env: {
     NEXT_PUBLIC_SUPABASE_URL: publicSupabaseUrl,

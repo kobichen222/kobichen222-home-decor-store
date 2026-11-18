@@ -135,6 +135,11 @@ const settingsSchema = z.object({
     reservation_minutes: z.coerce.number().int().min(5, "לפחות 5 דקות").max(1440),
   }),
   seo: z.object({ title: z.string().trim().min(2).max(70), description: z.string().trim().max(170) }),
+  analytics: z.object({
+    ga4_id: z.union([z.literal(""), z.string().trim().regex(/^G-[A-Z0-9]{4,20}$/, "מזהה GA4 בפורמט G-XXXXXXX")]),
+    meta_pixel_id: z.union([z.literal(""), z.string().trim().regex(/^\d{6,20}$/, "מזהה Meta Pixel: ספרות בלבד")]),
+    gsc_verification: z.string().trim().max(100).regex(/^[A-Za-z0-9_-]*$/, "קוד אימות Search Console לא תקין"),
+  }),
 });
 
 export async function saveSettings(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -148,6 +153,7 @@ export async function saveSettings(_prev: ActionState, formData: FormData): Prom
     },
     commerce: { vat_rate: g("vat_rate"), reservation_minutes: g("reservation_minutes") },
     seo: { title: g("seo_title"), description: g("seo_description") },
+    analytics: { ga4_id: g("ga4_id").toUpperCase(), meta_pixel_id: g("meta_pixel_id"), gsc_verification: g("gsc_verification") },
   });
   if (!parsed.success) return { message: parsed.error.issues[0].message };
   const db = await createSessionClient();
@@ -156,6 +162,7 @@ export async function saveSettings(_prev: ActionState, formData: FormData): Prom
     { key: "business", value: parsed.data.business, is_public: true },
     { key: "commerce", value: { ...((current?.value as object) ?? {}), ...parsed.data.commerce }, is_public: true },
     { key: "seo", value: parsed.data.seo, is_public: true },
+    { key: "analytics", value: parsed.data.analytics, is_public: true },
   ];
   const { error } = await db.from("store_settings").upsert(rows);
   if (error) return { message: error.message };

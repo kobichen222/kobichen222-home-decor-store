@@ -17,6 +17,7 @@ export type StoreSettings = {
   announcements: string[];
   seo: { title: string; description: string };
   commerce: { currency: string; vat_rate: number; prices_include_vat: boolean; reservation_minutes: number };
+  analytics: { ga4_id: string; meta_pixel_id: string; gsc_verification: string };
 };
 
 const FALLBACK: StoreSettings = {
@@ -24,6 +25,7 @@ const FALLBACK: StoreSettings = {
   announcements: [],
   seo: { title: "בית ועיצוב", description: "" },
   commerce: { currency: "ILS", vat_rate: 18, prices_include_vat: true, reservation_minutes: 30 },
+  analytics: { ga4_id: "", meta_pixel_id: "", gsc_verification: "" },
 };
 
 export async function getStoreSettings(): Promise<StoreSettings> {
@@ -38,6 +40,7 @@ export async function getStoreSettings(): Promise<StoreSettings> {
     announcements: (map.announcements as string[]) ?? [],
     seo: { ...FALLBACK.seo, ...(map.seo as object) },
     commerce: { ...FALLBACK.commerce, ...(map.commerce as object) },
+    analytics: { ...FALLBACK.analytics, ...(map.analytics as object) },
   };
 }
 

@@ -10,6 +10,7 @@ type Settings = {
   business: Record<string, string> & { social?: { instagram?: string; facebook?: string } };
   commerce: { vat_rate?: number; reservation_minutes?: number };
   seo: { title?: string; description?: string };
+  analytics?: { ga4_id?: string; meta_pixel_id?: string; gsc_verification?: string };
 };
 
 function Result({ state }: { state: { ok?: boolean; message?: string } | null }) {
@@ -54,6 +55,13 @@ export function SettingsForm({ settings }: { settings: Settings }) {
         <h2 className="font-bold">SEO של האתר</h2>
         <Field label="כותרת עמוד הבית" htmlFor="seo_title"><Input id="seo_title" name="seo_title" maxLength={70} defaultValue={settings.seo.title ?? ""} /></Field>
         <Field label="תיאור Meta של עמוד הבית" htmlFor="seo_description"><Textarea id="seo_description" name="seo_description" rows={2} maxLength={170} defaultValue={settings.seo.description ?? ""} /></Field>
+      </Card>
+      <Card className="grid gap-4 p-5 sm:grid-cols-3 sm:p-6">
+        <h2 className="font-bold sm:col-span-3">מדידה ופרסום</h2>
+        <p className="text-sm text-ink-soft sm:col-span-3">התגים נטענים רק אצל גולשים שאישרו עוגיות. ריק = כבוי.</p>
+        <Field label="Google Analytics 4" htmlFor="ga4_id" hint="G-XXXXXXXXXX"><Input id="ga4_id" name="ga4_id" dir="ltr" defaultValue={settings.analytics?.ga4_id ?? ""} /></Field>
+        <Field label="Meta Pixel ID" htmlFor="meta_pixel_id" hint="ספרות בלבד"><Input id="meta_pixel_id" name="meta_pixel_id" dir="ltr" defaultValue={settings.analytics?.meta_pixel_id ?? ""} /></Field>
+        <Field label="Search Console: קוד אימות" htmlFor="gsc_verification" hint="הערך שבתוך content של תג ה־meta"><Input id="gsc_verification" name="gsc_verification" dir="ltr" defaultValue={settings.analytics?.gsc_verification ?? ""} /></Field>
       </Card>
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={pending}>{pending ? "שומר…" : "שמירת הגדרות"}</Button>

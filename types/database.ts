@@ -209,14 +209,14 @@ isOneToOne: false
                   ]
                 },"business_accounts": {
                   Row: {
-                    "company_name": string,"company_number": string | null,"created_at": string,"discount_percent": number,"id": string,"status": string,"updated_at": string,"user_id": string
+                    "company_name": string,"company_number": string | null,"created_at": string,"discount_percent": number,"id": string,"notes": string | null,"phone": string | null,"status": string,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "company_name": string,"company_number"?: string | null,"created_at"?: string,"discount_percent"?: number,"id"?: string,"status"?: string,"updated_at"?: string,"user_id": string
+                    "company_name": string,"company_number"?: string | null,"created_at"?: string,"discount_percent"?: number,"id"?: string,"notes"?: string | null,"phone"?: string | null,"status"?: string,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "company_name"?: string,"company_number"?: string | null,"created_at"?: string,"discount_percent"?: number,"id"?: string,"status"?: string,"updated_at"?: string,"user_id"?: string
+                    "company_name"?: string,"company_number"?: string | null,"created_at"?: string,"discount_percent"?: number,"id"?: string,"notes"?: string | null,"phone"?: string | null,"status"?: string,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
@@ -307,14 +307,14 @@ isOneToOne: false
                   ]
                 },"carts": {
                   Row: {
-                    "coupon_code": string | null,"created_at": string,"email": string | null,"id": string,"status": string,"token": string,"updated_at": string,"user_id": string | null
+                    "coupon_code": string | null,"created_at": string,"email": string | null,"id": string,"reminder_sent_at": string | null,"status": string,"token": string,"updated_at": string,"user_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "coupon_code"?: string | null,"created_at"?: string,"email"?: string | null,"id"?: string,"status"?: string,"token"?: string,"updated_at"?: string,"user_id"?: string | null
+                    "coupon_code"?: string | null,"created_at"?: string,"email"?: string | null,"id"?: string,"reminder_sent_at"?: string | null,"status"?: string,"token"?: string,"updated_at"?: string,"user_id"?: string | null
                   }
                   Update: {
-                    "coupon_code"?: string | null,"created_at"?: string,"email"?: string | null,"id"?: string,"status"?: string,"token"?: string,"updated_at"?: string,"user_id"?: string | null
+                    "coupon_code"?: string | null,"created_at"?: string,"email"?: string | null,"id"?: string,"reminder_sent_at"?: string | null,"status"?: string,"token"?: string,"updated_at"?: string,"user_id"?: string | null
                   }
                   Relationships: [
                     
@@ -1181,6 +1181,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"rate_limits": {
+                  Row: {
+                    "hits": number,"key": string,"window_start": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "hits"?: number,"key": string,"window_start": string
+                  }
+                  Update: {
+                    "hits"?: number,"key"?: string,"window_start"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"redirects": {
                   Row: {
                     "created_at": string,"from_path": string,"id": string,"status_code": number,"to_path": string
@@ -1223,14 +1237,14 @@ isOneToOne: false
                   ]
                 },"reviews": {
                   Row: {
-                    "author_name": string,"body": string | null,"created_at": string,"id": string,"is_verified": boolean,"order_id": string | null,"product_id": string | null,"rating": number,"status": string,"user_id": string | null
+                    "author_name": string,"body": string | null,"created_at": string,"email": string | null,"id": string,"is_verified": boolean,"order_id": string | null,"product_id": string | null,"rating": number,"status": string,"title": string | null,"user_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "author_name": string,"body"?: string | null,"created_at"?: string,"id"?: string,"is_verified"?: boolean,"order_id"?: string | null,"product_id"?: string | null,"rating": number,"status"?: string,"user_id"?: string | null
+                    "author_name": string,"body"?: string | null,"created_at"?: string,"email"?: string | null,"id"?: string,"is_verified"?: boolean,"order_id"?: string | null,"product_id"?: string | null,"rating": number,"status"?: string,"title"?: string | null,"user_id"?: string | null
                   }
                   Update: {
-                    "author_name"?: string,"body"?: string | null,"created_at"?: string,"id"?: string,"is_verified"?: boolean,"order_id"?: string | null,"product_id"?: string | null,"rating"?: number,"status"?: string,"user_id"?: string | null
+                    "author_name"?: string,"body"?: string | null,"created_at"?: string,"email"?: string | null,"id"?: string,"is_verified"?: boolean,"order_id"?: string | null,"product_id"?: string | null,"rating"?: number,"status"?: string,"title"?: string | null,"user_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -1252,6 +1266,20 @@ isOneToOne: false
       referencedRelation: "products"
       referencedColumns: ["id"]
     }
+                  ]
+                },"search_log": {
+                  Row: {
+                    "created_at": string,"id": number,"q": string,"results": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: never,"q": string,"results": number
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: never,"q"?: string,"results"?: number
+                  }
+                  Relationships: [
+                    
                   ]
                 },"shipment_events": {
                   Row: {
@@ -1464,6 +1492,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"product_ratings": {
+                  Row: {
+                    "average": number | null,"count": number | null,"product_id": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "reviews_product_id_fkey"
+      columns: ["product_id"]
+isOneToOne: false
+      referencedRelation: "catalog_products"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "reviews_product_id_fkey"
+      columns: ["product_id"]
+isOneToOne: false
+      referencedRelation: "products"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Functions: {
@@ -1483,6 +1531,12 @@ isOneToOne: false
 { Args: { "p_limit"?: number,"p_offset"?: number,"p_q"?: string,"p_segment"?: string }; Returns: Json
                            },
 "admin_list_users":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"admin_mfa_ok":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"admin_mfa_status":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
 "admin_record_refund":
@@ -1583,6 +1637,9 @@ isOneToOne: false
 "catalog_search":
 { Args: { "p_category_id"?: string,"p_collection_id"?: string,"p_in_stock"?: boolean,"p_limit"?: number,"p_max_price"?: number,"p_min_price"?: number,"p_offset"?: number,"p_on_sale"?: boolean,"p_q"?: string,"p_sort"?: string,"p_value_ids"?: (string)[] }; Returns: Json
                            },
+"catalog_suggest":
+{ Args: { "p_q": string }; Returns: Json
+                           },
 "category_tree":
 { Args: { "p_category_id": string }; Returns: string[]
                            },
@@ -1601,11 +1658,26 @@ isOneToOne: false
 "is_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"is_admin_member":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
 "is_owner":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"mark_notifications_read":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"my_notifications":
+{ Args: { "p_limit"?: number }; Returns: Json
+                           },
 "my_permissions":
 { Args: Record<PropertyKey, never>; Returns: (string)[]
+                           },
+"popular_searches":
+{ Args: { "p_limit"?: number }; Returns: string[]
+                           },
+"rate_limit_hit":
+{ Args: { "p_key": string,"p_limit": number,"p_window_seconds": number }; Returns: boolean
                            },
 "refresh_product_search":
 { Args: { "p_product_id": string }; Returns: undefined

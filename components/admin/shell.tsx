@@ -7,6 +7,7 @@ import { Drawer } from "@/components/ui/drawer";
 import { signOut } from "@/features/admin/auth-actions";
 import { cn } from "@/lib/utils";
 import { ADMIN_NAV } from "./nav";
+import { NotificationsBell } from "./notifications-bell";
 
 // No route-level skeleton in the admin: a fallback would be held on screen
 // for a minimum time, which is slower than the server's answer. Instead the
@@ -83,7 +84,10 @@ export function AdminShell({ email, permissions, children }: { email: string; pe
             <Store className="size-4" />
             לצפייה בחנות
           </Link>
-          <span className="ms-auto hidden text-sm text-ink-soft sm:block" dir="ltr">
+          <div className="ms-auto">
+            <NotificationsBell />
+          </div>
+          <span className="hidden text-sm text-ink-soft sm:block" dir="ltr">
             {email}
           </span>
           <form action={signOut}>

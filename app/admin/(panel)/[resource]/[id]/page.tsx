@@ -67,9 +67,33 @@ export default async function ResourceEditPage({ params, searchParams }: PagePro
       </AdminHeader>
       {sp.saved && <Notice>נשמר בהצלחה.</Notice>}
       {typeof sp.error === "string" && ERRORS[sp.error] && <Notice tone="danger">{ERRORS[sp.error]}</Notice>}
+      {resource.key === "leads" && row && <LeadPhotos data={row.data} />}
       <div className="max-w-4xl">
         <ResourceForm key={String(sp.saved ?? "")} resource={clientResource(resource)} row={row} options={options} relationIds={relationIds} />
       </div>
     </>
+  );
+}
+
+async function LeadPhotos({ data }: { data: unknown }) {
+  const paths = ((data as { photos?: string[] } | null)?.photos ?? []).filter((p) => /^leads\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(jpg|png|webp)$/.test(p));
+  if (!paths.length) return null;
+  // Private bucket: short-lived signed links, created after the admin check.
+  const { createServiceClient } = await import("@/lib/supabase/service");
+  const { data: signed } = await createServiceClient().storage.from("private").createSignedUrls(paths, 600);
+  return (
+    <div className="mb-4 max-w-4xl">
+      <p className="mb-2 text-sm font-semibold">תמונות שצורפו</p>
+      <div className="flex flex-wrap gap-3">
+        {(signed ?? []).map((s) =>
+          s.signedUrl ? (
+            <a key={s.path} href={s.signedUrl} target="_blank" rel="noopener noreferrer" className="block size-32 overflow-hidden rounded-xl border border-line">
+              {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL */}
+              <img src={s.signedUrl} alt="תמונת החלל" className="size-full object-cover" />
+            </a>
+          ) : null,
+        )}
+      </div>
+    </div>
   );
 }

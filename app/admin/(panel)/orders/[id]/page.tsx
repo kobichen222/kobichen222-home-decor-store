@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { OrderNoteForm, OrderStatusForm } from "@/components/admin/order-actions";
+import { PrintButton } from "@/components/admin/print-button";
 import { RefundForm } from "@/components/admin/small-forms";
 import { AdminHeader, Badge, Card } from "@/components/admin/ui";
 import { StoreImage } from "@/components/shared/store-image";
@@ -45,7 +46,8 @@ export default async function OrderPage({ params }: PageProps<"/admin/orders/[id
       <AdminHeader title={`הזמנה ${order.order_number}`} description={formatDate(order.placed_at, true)} back={{ href: "/admin/orders", label: "הזמנות" }}>
         <Badge tone={order.payment_status === "paid" ? "success" : order.payment_status === "failed" ? "danger" : "neutral"}>תשלום: {PAYMENT_STATUS_LABELS[order.payment_status]}</Badge>
         <Badge tone={order.status === "cancelled" ? "danger" : "info"}>{ORDER_STATUS_LABELS[order.status]}</Badge>
-        <Link href={`/order/${order.public_token}`} target="_blank" className={buttonClass("outline", "sm")}>
+        <PrintButton label="הדפסה / מסמך אריזה" />
+        <Link href={`/order/${order.public_token}`} target="_blank" className={buttonClass("outline", "sm", "print:hidden")}>
           עמוד הלקוח
         </Link>
       </AdminHeader>
@@ -100,7 +102,7 @@ export default async function OrderPage({ params }: PageProps<"/admin/orders/[id
             </dl>
           </Card>
 
-          <Card className="p-5">
+          <Card className="p-5 print:hidden">
             <h2 className="mb-3 font-bold">יומן פעילות</h2>
             <ol className="space-y-3 text-sm">
               {events.map((ev) => {
@@ -138,13 +140,13 @@ export default async function OrderPage({ params }: PageProps<"/admin/orders/[id
 
         <div className="space-y-5">
           {can(admin, "orders.manage") && (
-            <Card className="p-5">
+            <Card className="p-5 print:hidden">
               <h2 className="mb-3 font-bold">טיפול בהזמנה</h2>
               <OrderStatusForm orderId={order.id} status={order.status} tracking={order.tracking_number} />
             </Card>
           )}
           {canRefund && (
-            <Card className="p-5">
+            <Card className="p-5 print:hidden">
               <h2 className="mb-3 font-bold">החזר כספי / החזרת מוצר</h2>
               {refunded > 0 && <p className="mb-2 text-sm text-ink-soft">הוחזרו עד כה: {formatPrice(refunded)}</p>}
               <RefundForm orderId={order.id} remaining={Math.round((order.total - refunded) * 100) / 100} />
@@ -188,7 +190,7 @@ export default async function OrderPage({ params }: PageProps<"/admin/orders/[id
               <p className="text-ink-soft">ללא כתובת (איסוף עצמי)</p>
             )}
           </Card>
-          <Card className="space-y-2 p-5 text-sm">
+          <Card className="space-y-2 p-5 text-sm print:hidden">
             <h2 className="text-base font-bold">תשלומים</h2>
             {order.payments.length === 0 && <p className="text-ink-soft">לא נרשמו תשלומים</p>}
             {order.payments.map((p) => (
