@@ -10,7 +10,9 @@ type CartContextValue = {
   error: string | null;
   open: boolean;
   setOpen: (open: boolean) => void;
-  hydrate: (cart: CartSummary) => void;
+  /** Order amount from which shipping is free (null when no such offer). */
+  freeShippingFrom: number | null;
+  hydrate: (cart: CartSummary, freeShippingFrom?: number | null) => void;
   add: (variantId: string, quantity: number, options?: { openDrawer?: boolean }) => Promise<boolean>;
   setQuantity: (itemId: string, quantity: number) => Promise<boolean>;
   coupon: (code: string | null) => Promise<boolean>;
@@ -22,6 +24,7 @@ const CartContext = React.createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = React.useState<CartSummary>(EMPTY_CART);
   const [ready, setReady] = React.useState(false);
+  const [freeShippingFrom, setFreeShippingFrom] = React.useState<number | null>(null);
   const [open, setOpen] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
@@ -51,8 +54,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       error,
       open,
       setOpen,
-      hydrate: (next) => {
+      freeShippingFrom,
+      hydrate: (next, freeFrom) => {
         setCart(next);
+        if (freeFrom !== undefined) setFreeShippingFrom(freeFrom);
         setReady(true);
       },
       add: (variantId, quantity, options) =>
@@ -64,7 +69,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       coupon: (code) => run(() => (code ? applyCoupon(code) : removeCoupon())),
       clearError: () => setError(null),
     }),
-    [cart, ready, pending, error, open, run],
+    [cart, ready, freeShippingFrom, pending, error, open, run],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
@@ -77,8 +82,8 @@ export function useCart() {
 }
 
 /** Receives the server-read cart and puts it in the client store. */
-export function CartHydrator({ cart }: { cart: CartSummary }) {
+export function CartHydrator({ cart, freeShippingFrom = null }: { cart: CartSummary; freeShippingFrom?: number | null }) {
   const { hydrate } = useCart();
-  React.useEffect(() => hydrate(cart), [cart]); // eslint-disable-line react-hooks/exhaustive-deps
+  React.useEffect(() => hydrate(cart, freeShippingFrom), [cart, freeShippingFrom]); // eslint-disable-line react-hooks/exhaustive-deps
   return null;
 }

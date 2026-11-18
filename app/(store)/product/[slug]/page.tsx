@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { redirectOrNotFound } from "@/lib/redirects";
 import { Suspense } from "react";
 import { Breadcrumbs, JsonLd } from "@/components/store/page-header";
-import { ProductGrid } from "@/components/store/product-card";
+import { Carousel } from "@/components/store/carousel";
+import { ProductCard } from "@/components/store/product-card";
 import { ProductView } from "@/components/store/product-view";
 import { ProductReviews } from "@/components/store/reviews";
 import { getProductReviews } from "@/features/catalog/reviews";
@@ -99,8 +100,13 @@ async function Related({ productId, categorySlug }: { productId: string; categor
   if (!products.length) return null;
   return (
     <section className="mt-20">
-      <h2 className="mb-8 text-2xl font-bold tracking-tight lg:text-[2rem]">מוצרים משלימים</h2>
-      <ProductGrid products={products} />
+      <Carousel title="מוצרים משלימים" eyebrow="שילובים שעובדים" label="מוצרים משלימים">
+        {products.map((p) => (
+          <li key={p.id} className="w-[64%] shrink-0 snap-start sm:w-[calc((100%-2rem)/3)] lg:w-[calc((100%-4.5rem)/4)]">
+            <ProductCard product={p} />
+          </li>
+        ))}
+      </Carousel>
     </section>
   );
 }

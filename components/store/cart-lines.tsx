@@ -1,5 +1,5 @@
 "use client";
-import { Minus, Plus, Tag, Trash2, X } from "lucide-react";
+import { Lock, Minus, Plus, Tag, Trash2, Truck, X } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
 import { StoreImage } from "@/components/shared/store-image";
@@ -170,5 +170,40 @@ export function CartTotals({ showShipping = false }: { showShipping?: boolean })
       </div>
       <p className="text-xs text-ink-soft">המחירים כוללים מע״מ</p>
     </dl>
+  );
+}
+
+/** "Add ₪X more for free shipping" with a progress bar. */
+export function FreeShippingProgress() {
+  const { cart, freeShippingFrom } = useCart();
+  if (!freeShippingFrom || cart.items.length === 0) return null;
+  const spent = Math.max(0, cart.total - (cart.shipping ?? 0));
+  const left = Math.max(0, freeShippingFrom - spent);
+  const pct = Math.min(100, Math.round((spent / freeShippingFrom) * 100));
+  return (
+    <div className="rounded-xl bg-sand px-4 py-3">
+      <p className="flex items-center gap-2 text-sm" aria-live="polite">
+        <Truck className="size-4 shrink-0 text-brand" strokeWidth={1.6} />
+        {left > 0 ? (
+          <span>
+            עוד <strong className="tabular-nums">{formatPrice(left)}</strong> למשלוח חינם
+          </span>
+        ) : (
+          <strong className="text-success">מגיע לכם משלוח חינם!</strong>
+        )}
+      </p>
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-line" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} aria-label="התקדמות למשלוח חינם">
+        <div className={cn("h-full rounded-full transition-[width] duration-500", left > 0 ? "bg-gold" : "bg-success")} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
+export function SecureNote() {
+  return (
+    <p className="flex items-center justify-center gap-1.5 text-xs text-ink-soft">
+      <Lock className="size-3.5" strokeWidth={1.8} />
+      תשלום מאובטח בהצפנה · פרטי הכרטיס לא נשמרים אצלנו
+    </p>
   );
 }

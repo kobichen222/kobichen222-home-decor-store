@@ -124,3 +124,19 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 export async function getBlogPost(slug: string): Promise<BlogPost | null> {
   return (await getBlogPosts()).find((p) => p.slug === slug) ?? null;
 }
+
+/** Lowest "free above" amount among active shipping methods, or null. */
+export async function getFreeShippingThreshold(): Promise<number | null> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("content");
+  const { data } = await createPublicClient()
+    .from("shipping_methods")
+    .select("free_above")
+    .eq("is_active", true)
+    .not("free_above", "is", null)
+    .order("free_above")
+    .limit(1);
+  const value = data?.[0]?.free_above;
+  return value == null ? null : Number(value);
+}

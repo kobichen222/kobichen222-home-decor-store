@@ -9,13 +9,14 @@ import { WishlistProvider } from "@/components/store/wishlist";
 import type { Metadata } from "next";
 import { Analytics } from "@/components/store/analytics";
 import { getCart } from "@/features/cart/server";
-import { getStoreSettings } from "@/features/cms/queries";
+import { getFreeShippingThreshold, getStoreSettings } from "@/features/cms/queries";
 
 // The cart is the only per-visitor part of the storefront chrome. It is
 // read from the cookie inside its own Suspense boundary, so the rest of
 // every page stays statically prerendered and cacheable.
 async function CartLoader() {
-  return <CartHydrator cart={await getCart()} />;
+  const [cart, freeShippingFrom] = await Promise.all([getCart(), getFreeShippingThreshold()]);
+  return <CartHydrator cart={cart} freeShippingFrom={freeShippingFrom} />;
 }
 
 export async function generateMetadata(): Promise<Metadata> {

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { buttonClass } from "@/components/ui/button";
 import { Drawer } from "@/components/ui/drawer";
 import { useCart } from "./cart-context";
-import { CartLines, CartTotals, CouponBox } from "./cart-lines";
+import { CartLines, CartTotals, CouponBox, FreeShippingProgress, SecureNote } from "./cart-lines";
 
 export function CartButton() {
   const { cart, setOpen, ready } = useCart();
@@ -37,6 +37,7 @@ export function CartDrawer() {
       footer={
         cart.items.length > 0 && (
           <div className="space-y-4">
+            <FreeShippingProgress />
             <CouponBox />
             {error && (
               <p className="text-sm font-medium text-danger" role="alert">
@@ -53,6 +54,7 @@ export function CartDrawer() {
               >
                 מעבר לתשלום
               </Link>
+              <SecureNote />
               <Link href="/cart" onClick={close} className="text-center text-sm font-semibold text-ink-soft underline-offset-4 hover:underline">
                 צפייה בסל המלא
               </Link>

@@ -1,5 +1,5 @@
 "use client";
-import { Check, Minus, Play, Plus, Truck } from "lucide-react";
+import { Check, Lock, Minus, Play, Plus, RotateCcw, ShieldCheck, Truck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { StoreImage } from "@/components/shared/store-image";
@@ -17,7 +17,43 @@ function optionKeys(variants: ProductVariant[]): string[] {
 
 export function ProductView({ product, rating, children }: { product: ProductDetail; rating?: { average: number | null; count: number }; children?: React.ReactNode }) {
   const router = useRouter();
-  const { add, pending, error, clearError } = useCart();
+  const { add, pending, error, clearError, freeShippingFrom } = useCart();
+  const buyRef = React.useRef<HTMLDivElement>(null);
+  const [showBar, setShowBar] = React.useState(false);
+
+  // On phones, once the main "add to cart" row scrolls away, a slim bar
+  // keeps the price and the button within reach.
+  React.useEffect(() => {
+    const el = buyRef.current;
+    if (!el) return;
+    // A scroll check rather than an IntersectionObserver: a long jump past
+    // the row (fast fling, anchor link) never "crosses" it, so the observer
+    // would not fire.
+    let frame = 0;
+    const check = () => {
+      frame = 0;
+      setShowBar(el.getBoundingClientRect().bottom < 0);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(check);
+    };
+    check();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+  React.useEffect(() => {
+    const root = document.documentElement;
+    if (showBar) root.style.setProperty("--buybar", "4.75rem");
+    else root.style.removeProperty("--buybar");
+    return () => {
+      root.style.removeProperty("--buybar");
+    };
+  }, [showBar]);
   const keys = React.useMemo(() => optionKeys(product.variants), [product.variants]);
   const initial =
     product.variants.find((v) => v.is_default && (v.in_stock || v.allow_backorder)) ??
@@ -237,7 +273,7 @@ export function ProductView({ product, rating, children }: { product: ProductDet
                   : "במלאי"}
           </p>
 
-          <div className="flex flex-wrap items-stretch gap-3">
+          <div ref={buyRef} className="flex flex-wrap items-stretch gap-3">
             <div className="inline-flex items-center rounded-full border border-line bg-white">
               <button
                 type="button"
@@ -286,12 +322,46 @@ export function ProductView({ product, rating, children }: { product: ProductDet
           {(product.delivery_days_min || product.delivery_days_max) && (
             <p className="flex items-center gap-2.5 rounded-xl bg-sand px-4 py-3 text-sm">
               <Truck className="size-5 shrink-0 text-brand" strokeWidth={1.5} />
-              אספקה תוך {product.delivery_days_min}–{product.delivery_days_max} ימי עסקים · משלוח חינם מעל 499 ₪
+              אספקה תוך {product.delivery_days_min}–{product.delivery_days_max} ימי עסקים
+              {freeShippingFrom ? ` · משלוח חינם מעל ${formatPrice(freeShippingFrom)}` : ""}
             </p>
           )}
+
+          <ul className="grid grid-cols-3 gap-2 border-y border-line py-4 text-center text-xs text-ink-soft">
+            <li className="flex flex-col items-center gap-1.5">
+              <ShieldCheck className="size-5 text-brand" strokeWidth={1.5} />
+              שנה אחריות
+            </li>
+            <li className="flex flex-col items-center gap-1.5">
+              <RotateCcw className="size-5 text-brand" strokeWidth={1.5} />
+              14 יום להחזרה
+            </li>
+            <li className="flex flex-col items-center gap-1.5">
+              <Lock className="size-5 text-brand" strokeWidth={1.5} />
+              תשלום מאובטח
+            </li>
+          </ul>
         </div>
 
         {children}
+      </div>
+
+      <div
+        aria-hidden={!showBar}
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-40 border-t border-line bg-cream/95 px-4 py-3 shadow-[0_-8px_30px_-16px_rgb(0_0_0/0.25)] backdrop-blur transition-transform duration-300 lg:hidden",
+          showBar ? "translate-y-0" : "pointer-events-none translate-y-full",
+        )}
+      >
+        <div className="flex items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold">{product.name}</p>
+            <p className="text-sm font-bold tabular-nums">{formatPrice(variant?.price ?? product.variants[0].price)}</p>
+          </div>
+          <Button size="md" className="shrink-0 px-6" disabled={!purchasable || pending} tabIndex={showBar ? 0 : -1} onClick={() => submit(false)}>
+            {purchasable ? "הוספה לסל" : "אזל מהמלאי"}
+          </Button>
+        </div>
       </div>
     </div>
   );
