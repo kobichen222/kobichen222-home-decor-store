@@ -1,10 +1,10 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import Link from "next/link";
 import { after } from "next/server";
 import { getFacets, searchProducts } from "@/features/catalog/queries";
 import { createServiceClient } from "@/lib/supabase/service";
 import { hasActiveFilters, listingQuery, parseListingParams, type RawSearchParams } from "@/features/catalog/params";
-import { PAGE_SIZE } from "@/features/catalog/types";
+import { PAGE_SIZE, type Facets } from "@/features/catalog/types";
 import { buttonClass } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { FilterSidebar, MobileFilters, SortSelect } from "./filter-form";
@@ -62,6 +62,56 @@ function Pagination({ basePath, filters, total }: { basePath: string; filters: R
   );
 }
 
+type Filters = ReturnType<typeof parseListingParams>;
+
+/** Removable chips for every applied filter, so shoppers see and undo them in one tap. */
+function ActiveFilters({ basePath, filters, facets }: { basePath: string; filters: Filters; facets: Facets }) {
+  if (!hasActiveFilters(filters)) return null;
+  const names = new Map(facets.attributes.flatMap((a) => a.values.map((v) => [v.id, { label: v.value, attr: a.name, color: v.color_hex }] as const)));
+  const href = (next: Partial<Filters>) => basePath + listingQuery({ ...filters, ...next, page: 1 });
+  const chips: { key: string; label: string; href: string; color?: string | null }[] = [];
+  for (const id of filters.valueIds) {
+    const n = names.get(id);
+    if (n) chips.push({ key: id, label: `${n.attr}: ${n.label}`, color: n.color, href: href({ valueIds: filters.valueIds.filter((v) => v !== id) }) });
+  }
+  if (filters.minPrice !== null || filters.maxPrice !== null) {
+    const label =
+      filters.minPrice !== null && filters.maxPrice !== null
+        ? `מחיר: ${filters.minPrice}–${filters.maxPrice} ₪`
+        : filters.minPrice !== null
+          ? `מחיר: מ־${filters.minPrice} ₪`
+          : `מחיר: עד ${filters.maxPrice} ₪`;
+    chips.push({ key: "price", label, href: href({ minPrice: null, maxPrice: null }) });
+  }
+  if (filters.inStock) chips.push({ key: "stock", label: "במלאי בלבד", href: href({ inStock: false }) });
+  if (filters.onSale) chips.push({ key: "sale", label: "בהנחה", href: href({ onSale: false }) });
+  const clear = basePath + listingQuery({ ...filters, valueIds: [], minPrice: null, maxPrice: null, onSale: false, inStock: false, page: 1 });
+  return (
+    <ul className="mb-6 flex flex-wrap items-center gap-2" aria-label="סינונים פעילים">
+      {chips.map((c) => (
+        <li key={c.key}>
+          <Link
+            href={c.href}
+            aria-label={`הסרת הסינון ${c.label}`}
+            className="flex h-8 items-center gap-1.5 rounded-full border border-line bg-white pe-2.5 ps-3 text-sm transition-colors hover:border-ink"
+          >
+            {c.color && <span className="size-3.5 rounded-full border border-ink/15" style={{ backgroundColor: c.color }} aria-hidden="true" />}
+            {c.label}
+            <X className="size-3.5 text-ink-soft" />
+          </Link>
+        </li>
+      ))}
+      {chips.length > 1 && (
+        <li>
+          <Link href={clear} className="px-2 text-sm font-semibold text-brand underline-offset-4 hover:underline">
+            ניקוי הכול
+          </Link>
+        </li>
+      )}
+    </ul>
+  );
+}
+
 export async function Listing({
   basePath,
   scope,
@@ -99,6 +149,7 @@ export async function Listing({
           </div>
           <SortSelect action={basePath} current={filters} />
         </div>
+        <ActiveFilters basePath={basePath} filters={filters} facets={facets} />
         {items.length > 0 ? (
           <ProductGrid products={items} priorityCount={4} />
         ) : (

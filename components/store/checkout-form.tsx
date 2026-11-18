@@ -4,6 +4,7 @@ import Link from "next/link";
 import * as React from "react";
 import { StoreImage } from "@/components/shared/store-image";
 import { Button } from "@/components/ui/button";
+import { SecureNote } from "./cart-lines";
 import { Field, Input, Textarea } from "@/components/ui/field";
 import { placeOrder } from "@/features/checkout/actions";
 import type { CartSummary } from "@/features/cart/types";
@@ -246,6 +247,7 @@ export function CheckoutForm({ options, prefill }: { options: ShippingOption[]; 
         <Button type="submit" size="lg" className="w-full" disabled={pending}>
           {pending ? "יוצר הזמנה…" : "אישור ומעבר לתשלום"}
         </Button>
+        <SecureNote />
       </aside>
     </form>
   );

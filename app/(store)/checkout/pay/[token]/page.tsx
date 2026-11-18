@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
+import { CheckoutSteps } from "@/components/store/checkout-steps";
 import { Button } from "@/components/ui/button";
 import { simulatePayment } from "@/features/checkout/actions";
 import { getOrderByToken } from "@/features/orders/queries";
@@ -41,6 +42,9 @@ async function Pay({ params }: PageProps<"/checkout/pay/[token]">) {
 export default function PayPage(props: PageProps<"/checkout/pay/[token]">) {
   return (
     <div className="container-page py-14">
+      <div className="flex justify-center">
+        <CheckoutSteps current={3} />
+      </div>
       <Suspense fallback={<div className="mx-auto h-72 max-w-md animate-pulse rounded-2xl bg-sand" />}>
         <Pay {...props} />
       </Suspense>

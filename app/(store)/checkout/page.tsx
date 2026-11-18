@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { CheckoutForm, type CheckoutPrefill, type ShippingOption } from "@/components/store/checkout-form";
 import { getCustomer } from "@/lib/auth/customer";
 import { createSessionClient } from "@/lib/supabase/server";
+import { CheckoutSteps } from "@/components/store/checkout-steps";
 import { PageHeader } from "@/components/store/page-header";
 import { readCartId, summarize, syncCartOwner } from "@/features/cart/server";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -51,6 +52,7 @@ export default function CheckoutPage() {
         ]}
       />
       <div className="container-page py-10">
+        <CheckoutSteps current={2} />
         <Suspense fallback={<div className="h-96 animate-pulse rounded-2xl bg-sand" aria-hidden="true" />}>
           <Checkout />
         </Suspense>
