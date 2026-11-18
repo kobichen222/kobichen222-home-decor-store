@@ -1,11 +1,12 @@
 "use client";
-import { Briefcase, ChevronDown, Heart, Mail, Menu, MessageCircle, Phone, User } from "lucide-react";
+import { Briefcase, ChevronDown, Heart, Mail, Menu, MessageCircle, Phone, Search, User } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
 import { StoreImage } from "@/components/shared/store-image";
 import { Drawer } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
 import type { NavNode } from "./desktop-nav";
+import { openMobileSearch } from "./mobile-search";
 
 type Contact = { phone: string; whatsapp: string; email: string; hours: string };
 
@@ -72,6 +73,17 @@ export function MobileMenu({ categories, contact }: { categories: NavNode[]; con
         }
       >
         <div className="px-5 pb-6 pt-4">
+          <button
+            type="button"
+            onClick={() => {
+              close();
+              openMobileSearch();
+            }}
+            className="mb-4 flex h-12 w-full items-center gap-3 rounded-full border border-line bg-white px-4 text-start text-[0.95rem] text-ink-soft/80"
+          >
+            <Search className="size-[1.15rem] text-ink-soft" strokeWidth={1.7} />
+            מה תרצו לעצב היום?
+          </button>
           <ul className="grid grid-cols-4 gap-2">
             {QUICK.map(({ href, label, icon: Icon }) => (
               <li key={href}>

@@ -12,8 +12,20 @@ async function cachedSuggest(q: string): Promise<Suggestions> {
   "use cache";
   cacheLife("minutes");
   cacheTag("catalog");
-  const { data } = await createPublicClient().rpc("catalog_suggest", { p_q: q });
-  return (data as unknown as Suggestions) ?? { products: [], categories: [] };
+  const db = createPublicClient();
+  const { data, error } = await db.rpc("catalog_suggest", { p_q: q });
+  if (!error && data) return data as unknown as Suggestions;
+  // Fallback while the typo-tolerant search function is not installed in
+  // the database: plain "contains" matching on names.
+  const like = `%${q.replace(/[%_\\,()]/g, " ").trim()}%`;
+  const [{ data: products }, { data: categories }] = await Promise.all([
+    db.from("catalog_products").select("name, slug, price, image_url").ilike("name", like).order("sales_count", { ascending: false }).limit(6),
+    db.from("categories").select("name, slug").eq("is_active", true).ilike("name", like).limit(4),
+  ]);
+  return {
+    products: (products ?? []).map((p) => ({ ...p, price: Number(p.price) })) as Suggestions["products"],
+    categories: (categories ?? []) as Suggestions["categories"],
+  };
 }
 
 export async function suggest(q: string): Promise<Suggestions> {
@@ -26,6 +38,6 @@ export async function popularSearches(): Promise<string[]> {
   "use cache";
   cacheLife("hours");
   cacheTag("catalog");
-  const { data } = await createPublicClient().rpc("popular_searches", { p_limit: 6 });
-  return (data as unknown as string[]) ?? [];
+  const { data, error } = await createPublicClient().rpc("popular_searches", { p_limit: 6 });
+  return error ? [] : ((data as unknown as string[]) ?? []);
 }

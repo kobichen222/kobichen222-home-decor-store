@@ -35,7 +35,7 @@ export async function Header() {
         <SearchBox className="mx-auto hidden w-full max-w-md lg:block" />
 
         <div className="ms-auto flex items-center lg:ms-0">
-          <MobileSearch />
+          <MobileSearch categories={tree} />
           <Link href="/business" className="hidden h-11 items-center rounded-full px-3 text-sm font-semibold hover:bg-sand xl:flex">
             לעסקים
           </Link>
