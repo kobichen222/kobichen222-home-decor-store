@@ -23,7 +23,10 @@
 
 @layer base {
   html {
-    scroll-behavior: smooth;
+    /* On navigation Next.js scrolls the new page's content into view. Without
+       this offset it would stop with the content tucked under the sticky
+       header instead of at the very top of the page. */
+    scroll-padding-top: 14rem;
   }
   body {
     background: var(--color-cream);
@@ -55,7 +58,6 @@
     *::after {
       animation-duration: 0.01ms !important;
       transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
     }
   }
 }

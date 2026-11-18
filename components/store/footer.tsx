@@ -86,7 +86,10 @@ export async function Footer() {
       </div>
       <div className="border-t border-white/10">
         <p className="container-page py-5 text-center text-xs text-cream/60">
-          © {business.name}. כל הזכויות שמורות. המחירים באתר כוללים מע״מ.
+          © {business.name}. כל הזכויות שמורות. המחירים באתר כוללים מע״מ.{" "}
+          <Link href="/admin" prefetch={false} className="underline underline-offset-2 hover:text-gold">
+            כניסה לניהול
+          </Link>
         </p>
       </div>
     </footer>

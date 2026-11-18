@@ -42,3 +42,13 @@ test("admin area requires sign-in", async ({ page }) => {
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/admin\/login/);
 });
+
+test("navigating to another page starts at the top", async ({ page }) => {
+  await page.goto("/");
+  const link = page.locator('a[href^="/product/"]').first();
+  await link.scrollIntoViewIfNeeded();
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(200);
+  await link.click();
+  await page.waitForURL(/\/product\//);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+});
