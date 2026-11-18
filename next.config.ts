@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL) : null;
+// The Vercel ↔ Supabase integration can add a custom prefix to the variables
+// it creates (e.g. NEXT_PUBLIC_SHOP_SUPABASE_URL). Accept both spellings and
+// expose them to the app under the canonical names.
+const publicSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SHOP_SUPABASE_URL || "";
+const publicSupabaseKey =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SHOP_SUPABASE_PUBLISHABLE_KEY || "";
+const supabaseUrl = publicSupabaseUrl ? new URL(publicSupabaseUrl) : null;
 
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -14,6 +20,11 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  // Public values only. The secret key is never listed here.
+  env: {
+    NEXT_PUBLIC_SUPABASE_URL: publicSupabaseUrl,
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publicSupabaseKey,
+  },
   turbopack: {
     rules: {
       "*.css": {

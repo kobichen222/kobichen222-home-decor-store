@@ -51,7 +51,8 @@ npm run dev                 # http://localhost:3000  ·  ניהול: /admin
    `seed.sql` הוא נתוני הדגמה בלבד ואינו מיועד ל־Production.
 2. **Vercel**: לייבא את הריפו ולהגדיר את המשתנים מ־`.env.example`. `SUPABASE_SECRET_KEY` הוא סוד שרת בלבד.
 3. **בעלים ראשון**: `npm run admin:create -- <email> <password>` מול הפרויקט המרוחק.
-4. **Cron**: `vercel.json` מגדיר שחרור שמירות מלאי כל 10 דקות (דורש תוכנית Vercel Pro; ב־Hobby אפשר רק פעם ביום).
+4. **Cron**: `vercel.json` מריץ פעם ביום שחרור של שמירות מלאי שפג תוקפן. אותו שחרור רץ גם בתחילת כל הזמנה חדשה, כך שמלאי לא נשאר תקוע.
+5. **אתר הדגמה**: `PAYMENT_PROVIDER=mock` יחד עם `ALLOW_MOCK_PAYMENTS=true` מפעילים את סימולטור התשלום גם ב־Production. להסיר לפני מכירה אמיתית.
 
 ## ארכיטקטורה
 

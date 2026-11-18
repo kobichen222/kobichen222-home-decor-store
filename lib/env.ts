@@ -25,7 +25,8 @@ function required(name: string): string {
 }
 
 export const serverEnv = {
-  supabaseSecretKey: () => required("SUPABASE_SECRET_KEY"),
+  // SHOP_SUPABASE_SECRET_KEY: the name used when the Vercel integration adds a prefix.
+  supabaseSecretKey: () => process.env.SUPABASE_SECRET_KEY || process.env.SHOP_SUPABASE_SECRET_KEY || required("SUPABASE_SECRET_KEY"),
   paymentProvider: () => process.env.PAYMENT_PROVIDER ?? "",
   paymentWebhookSecret: () => required("PAYMENT_WEBHOOK_SECRET"),
   cronSecret: () => required("CRON_SECRET"),

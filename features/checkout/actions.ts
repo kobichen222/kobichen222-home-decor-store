@@ -59,6 +59,11 @@ export async function placeOrder(_prev: CheckoutState, formData: FormData): Prom
   if (!cartId) return { message: DB_ERRORS.CART_NOT_FOUND };
   const v = parsed.data;
 
+  // Free stock held by orders that were never paid. The scheduled job does
+  // the same; doing it here too means a shopper is never blocked by an
+  // expired reservation, however often the job runs.
+  await db.rpc("release_expired_orders");
+
   // Prices, discounts, shipping and the total are computed inside the
   // database from the catalog. Nothing price-related comes from the form.
   const { data, error } = await db.rpc("create_order", {
