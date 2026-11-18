@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ImageManager } from "@/components/admin/image-manager";
 import { ProductForm } from "@/components/admin/product-form";
+import { VideoManager } from "@/components/admin/video-manager";
 import { AdminHeader, Badge } from "@/components/admin/ui";
 import { buttonClass } from "@/components/ui/button";
 import { getProductForEdit, getProductFormOptions } from "@/features/admin/queries";
@@ -40,6 +41,7 @@ export default async function EditProductPage({ params, searchParams }: PageProp
       )}
       <div className="space-y-5">
         <ImageManager productId={product.id} productName={product.name} images={product.images} />
+        <VideoManager productId={product.id} videos={product.videos} />
         {/* key: remount with fresh server data after each save */}
         <ProductForm key={`${product.updated_at}-${saved ?? ""}`} product={product} options={options} canManageStock={can(admin, "inventory.manage")} />
       </div>

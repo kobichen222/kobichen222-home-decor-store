@@ -1069,6 +1069,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"product_videos": {
+                  Row: {
+                    "created_at": string,"id": string,"kind": string,"product_id": string,"sort_order": number,"storage_path": string | null,"title": string | null,"url": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"kind": string,"product_id": string,"sort_order"?: number,"storage_path"?: string | null,"title"?: string | null,"url": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"kind"?: string,"product_id"?: string,"sort_order"?: number,"storage_path"?: string | null,"title"?: string | null,"url"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "product_videos_product_id_fkey"
+      columns: ["product_id"]
+isOneToOne: false
+      referencedRelation: "catalog_products"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "product_videos_product_id_fkey"
+      columns: ["product_id"]
+isOneToOne: false
+      referencedRelation: "products"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"products": {
                   Row: {
                     "brand_id": string | null,"care_instructions": string | null,"created_at": string,"delivery_days_max": number | null,"delivery_days_min": number | null,"depth_cm": number | null,"description": string | null,"handling_days": number | null,"height_cm": number | null,"id": string,"installation_instructions": string | null,"is_featured": boolean,"name": string,"noindex": boolean,"og_image_url": string | null,"package_dimensions": Json | null,"price": number,"published_at": string | null,"sale_ends_at": string | null,"sale_price": number | null,"sale_starts_at": string | null,"sales_count": number,"search_text": string,"seo_description": string | null,"seo_title": string | null,"shipping_weight_kg": number | null,"short_description": string | null,"sku": string,"slug": string,"specs": NonNullable<Json>,"status": Database["public"]['Enums']["product_status"],"updated_at": string,"video_url": string | null,"weight_kg": number | null,"width_cm": number | null

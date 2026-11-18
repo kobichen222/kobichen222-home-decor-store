@@ -16,12 +16,12 @@ export async function proxy(request: NextRequest) {
       },
     },
   });
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Verifies the token locally and refreshes it when it is about to expire.
+  const { data } = await supabase.auth.getClaims();
+  const signedIn = !!data?.claims?.sub;
 
   const isLogin = request.nextUrl.pathname === "/admin/login";
-  if (!user && !isLogin) {
+  if (!signedIn && !isLogin) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin/login";
     url.search = "";

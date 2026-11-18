@@ -121,6 +121,16 @@ async function ProductContent({ params }: Pick<PageProps<"/product/[slug]">, "pa
     description: product.short_description ?? undefined,
     image: product.images.map((i) => absolute(i.url)),
     brand: product.brand ? { "@type": "Brand", name: product.brand.name } : undefined,
+    video: product.videos.length
+      ? product.videos.map((v) => ({
+          "@type": "VideoObject",
+          name: v.title ?? product.name,
+          description: product.short_description ?? product.name,
+          uploadDate: v.created_at,
+          thumbnailUrl: v.kind === "youtube" ? `https://i.ytimg.com/vi/${v.url}/hqdefault.jpg` : absolute(product.images[0]?.url ?? "/"),
+          ...(v.kind === "youtube" ? { embedUrl: `https://www.youtube-nocookie.com/embed/${v.url}` } : { contentUrl: v.url }),
+        }))
+      : undefined,
     offers: {
       "@type": prices.length > 1 ? "AggregateOffer" : "Offer",
       url,

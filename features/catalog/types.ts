@@ -95,6 +95,7 @@ export type ProductVariant = {
 };
 
 export type ProductImage = { id: string; url: string; alt: string | null; is_primary: boolean };
+export type ProductVideo = { id: string; kind: "file" | "youtube"; url: string; title: string | null; created_at: string };
 
 export type ProductDetail = {
   id: string;
@@ -119,6 +120,7 @@ export type ProductDetail = {
   og_image_url: string | null;
   noindex: boolean;
   images: ProductImage[];
+  videos: ProductVideo[];
   variants: ProductVariant[];
   categories: { name: string; slug: string; is_primary: boolean }[];
   colorHex: Record<string, string>;

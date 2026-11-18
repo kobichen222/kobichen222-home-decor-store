@@ -23,6 +23,7 @@ export async function getProductForEdit(id: string) {
     .select(
       `*, private:product_private(cost_price),
        images:product_images(id, url, alt, is_primary, sort_order),
+       videos:product_videos(id, kind, url, title, sort_order),
        categories:product_categories(category_id, is_primary),
        attributes:product_attribute_assignments(attribute_value_id),
        variants:product_variants(id, sku, name, options, price, sale_price, is_default, is_active, sort_order,
@@ -34,6 +35,7 @@ export async function getProductForEdit(id: string) {
   return {
     ...data,
     images: [...data.images].sort((a, b) => a.sort_order - b.sort_order),
+    videos: [...data.videos].sort((a, b) => a.sort_order - b.sort_order) as { id: string; kind: "file" | "youtube"; url: string; title: string | null; sort_order: number }[],
     variants: [...data.variants].sort((a, b) => a.sort_order - b.sort_order),
   };
 }

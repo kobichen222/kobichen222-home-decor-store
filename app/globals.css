@@ -110,3 +110,12 @@
     opacity: 1;
   }
 }
+
+@keyframes admin-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(0.85);
+  }
+}

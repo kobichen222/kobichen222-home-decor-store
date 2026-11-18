@@ -38,16 +38,15 @@ export default async function ResourceEditPage({ params, searchParams }: PagePro
     row = data;
   }
 
-  const options: Record<string, Option[]> = {};
-  for (const f of resource.fields) {
-    if (f.optionsFrom) options[f.name] = await loadOptions(db, f.optionsFrom);
-    if (f.kind === "products") options[f.name] = await loadOptions(db, "products");
-  }
-  let relationIds: string[] = [];
-  if (resource.productRelation && row) {
-    const { data } = await db.from(resource.productRelation.table).select("product_id").eq(resource.productRelation.fk, id).order("sort_order");
-    relationIds = ((data ?? []) as { product_id: string }[]).map((r) => r.product_id);
-  }
+  // All option lists and the relation load in parallel.
+  const optionFields = resource.fields.filter((f) => f.optionsFrom || f.kind === "products");
+  const rel = resource.productRelation;
+  const [optionLists, relationRows] = await Promise.all([
+    Promise.all(optionFields.map((f) => loadOptions(db, f.optionsFrom ?? "products"))),
+    rel && row ? db.from(rel.table).select("product_id").eq(rel.fk, id).order("sort_order") : Promise.resolve({ data: [] }),
+  ]);
+  const options: Record<string, Option[]> = Object.fromEntries(optionFields.map((f, i) => [f.name, optionLists[i]]));
+  const relationIds = ((relationRows.data ?? []) as { product_id: string }[]).map((r) => r.product_id);
   const publicPath = row && resource.publicPath ? resource.publicPath(row) : null;
   const title = isNew ? resource.newLabel : String(row?.name ?? row?.title ?? row?.code ?? row?.full_name ?? resource.singular);
 

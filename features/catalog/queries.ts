@@ -111,6 +111,7 @@ export async function getProductBySlug(slug: string): Promise<ProductDetail | nu
        seo_title, seo_description, og_image_url, noindex,
        brand:brands(name, slug),
        images:product_images(id, url, alt, is_primary, sort_order),
+       videos:product_videos(id, kind, url, title, sort_order, created_at),
        categories:product_categories(is_primary, category:categories(name, slug)),
        attributes:product_attribute_assignments(value:product_attribute_values(value, color_hex))`,
     )
@@ -140,6 +141,9 @@ export async function getProductBySlug(slug: string): Promise<ProductDetail | nu
     images: [...(product.images ?? [])].sort(
       (a, b) => Number(b.is_primary) - Number(a.is_primary) || a.sort_order - b.sort_order,
     ),
+    videos: [...(product.videos ?? [])]
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map(({ id, kind, url, title, created_at }) => ({ id, kind: kind as "file" | "youtube", url, title, created_at })),
     variants: variants as unknown as ProductVariant[],
     categories: (product.categories ?? [])
       .filter((c) => c.category)

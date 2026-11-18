@@ -1,5 +1,5 @@
 "use client";
-import { Check, Minus, Plus, Truck } from "lucide-react";
+import { Check, Minus, Play, Plus, Truck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { StoreImage } from "@/components/shared/store-image";
@@ -30,7 +30,10 @@ export function ProductView({ product, children }: { product: ProductDetail; chi
   const variant = product.variants.find((v) => keys.every((k) => v.options[k] === selected[k])) ?? null;
   const purchasable = !!variant && (variant.in_stock || variant.allow_backorder);
   const maxQty = variant ? (variant.allow_backorder ? 20 : Math.max(variant.available, 1)) : 1;
-  const image = product.images.find((i) => i.id === imageId) ?? product.images[0];
+  // Gallery: images first, then videos. imageId may point at either.
+  const video = product.videos.find((v) => v.id === imageId) ?? null;
+  const image = video ? null : (product.images.find((i) => i.id === imageId) ?? product.images[0]);
+  const mediaCount = product.images.length + product.videos.length;
   const onSale = !!variant && variant.regular_price > variant.price;
 
   function choose(key: string, value: string) {
@@ -59,6 +62,29 @@ export function ProductView({ product, children }: { product: ProductDetail; chi
       {/* Gallery */}
       <div className="flex min-w-0 flex-col gap-3 lg:flex-row-reverse lg:items-start">
         <div className="relative aspect-[4/5] w-full min-w-0 overflow-hidden rounded-2xl bg-sand lg:flex-1">
+          {video?.kind === "file" && (
+            <video
+              key={video.id}
+              src={video.url}
+              controls
+              autoPlay
+              muted
+              playsInline
+              preload="metadata"
+              aria-label={video.title ?? `סרטון: ${product.name}`}
+              className="absolute inset-0 size-full bg-ink object-contain"
+            />
+          )}
+          {video?.kind === "youtube" && (
+            <iframe
+              key={video.id}
+              src={`https://www.youtube-nocookie.com/embed/${video.url}?autoplay=1&mute=1&rel=0&playsinline=1`}
+              title={video.title ?? `סרטון: ${product.name}`}
+              allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+              allowFullScreen
+              className="absolute inset-0 size-full bg-ink"
+            />
+          )}
           {image && (
             <StoreImage
               key={image.id}
@@ -70,20 +96,20 @@ export function ProductView({ product, children }: { product: ProductDetail; chi
               className="object-cover motion-safe:animate-[fade-in_.35s_ease-out]"
             />
           )}
-          {onSale && variant && (
+          {onSale && variant && !video && (
             <span className="absolute start-4 top-4 rounded-full bg-brand px-3 py-1.5 text-sm font-bold text-cream">
               −{Math.round(((variant.regular_price - variant.price) / variant.regular_price) * 100)}%
             </span>
           )}
         </div>
-        {product.images.length > 1 && (
+        {mediaCount > 1 && (
           <ul className="no-scrollbar flex gap-2.5 overflow-x-auto p-1 lg:w-22 lg:shrink-0 lg:flex-col lg:overflow-visible" aria-label="תמונות המוצר">
             {product.images.map((img, i) => (
               <li key={img.id} className="shrink-0">
                 <button
                   type="button"
                   onClick={() => setImageId(img.id)}
-                  aria-label={`תמונה ${i + 1} מתוך ${product.images.length}`}
+                  aria-label={`תמונה ${i + 1} מתוך ${mediaCount}`}
                   aria-current={img.id === image?.id}
                   className={cn(
                     "relative block h-20 w-16 overflow-hidden rounded-lg bg-sand ring-offset-2 ring-offset-cream transition-shadow lg:h-24 lg:w-20",
@@ -91,6 +117,30 @@ export function ProductView({ product, children }: { product: ProductDetail; chi
                   )}
                 >
                   <StoreImage src={img.url} alt="" fill sizes="80px" className="object-cover" />
+                </button>
+              </li>
+            ))}
+            {product.videos.map((v, i) => (
+              <li key={v.id} className="shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setImageId(v.id)}
+                  aria-label={`סרטון ${i + 1}${v.title ? `: ${v.title}` : ""}`}
+                  aria-current={v.id === video?.id}
+                  className={cn(
+                    "relative grid h-20 w-16 place-items-center overflow-hidden rounded-lg bg-ink ring-offset-2 ring-offset-cream transition-shadow lg:h-24 lg:w-20",
+                    v.id === video?.id ? "ring-2 ring-brand" : "opacity-80 hover:opacity-100",
+                  )}
+                >
+                  {v.kind === "youtube" ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={`https://i.ytimg.com/vi/${v.url}/mqdefault.jpg`} alt="" className="absolute inset-0 size-full object-cover" />
+                  ) : (
+                    <video src={`${v.url}#t=0.5`} muted playsInline preload="metadata" aria-hidden="true" className="absolute inset-0 size-full object-cover" />
+                  )}
+                  <span className="relative grid size-8 place-items-center rounded-full bg-white/90 text-ink shadow">
+                    <Play className="size-4 fill-current" />
+                  </span>
                 </button>
               </li>
             ))}

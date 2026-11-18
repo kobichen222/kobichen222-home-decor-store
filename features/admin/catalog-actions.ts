@@ -398,3 +398,77 @@ export async function addOrderNote(_prev: FormState, formData: FormData): Promis
   if (error) return { message: dbMessage(error) };
   return { ok: true };
 }
+
+// ---- Videos -------------------------------------------------------------
+const videoPath = z.string().regex(/^products\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(mp4|webm|mov)$/);
+
+/** YouTube URL or bare id → the 11-character video id. */
+function youtubeId(input: string): string | null {
+  const s = input.trim();
+  if (/^[A-Za-z0-9_-]{11}$/.test(s)) return s;
+  try {
+    const u = new URL(s);
+    const host = u.hostname.replace(/^www\.|^m\./, "");
+    let id: string | null = null;
+    if (host === "youtu.be") id = u.pathname.slice(1).split("/")[0];
+    else if (host === "youtube.com" || host === "youtube-nocookie.com") {
+      id = u.searchParams.get("v") ?? u.pathname.match(/^\/(?:embed|shorts|live)\/([^/?]+)/)?.[1] ?? null;
+    }
+    return id && /^[A-Za-z0-9_-]{11}$/.test(id) ? id : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function addProductVideo(
+  productId: string,
+  input: { storagePath?: string; youtube?: string; title?: string },
+): Promise<FormState> {
+  await requireAdmin("catalog.manage");
+  const id = z.uuid().parse(productId);
+  const db = await createSessionClient();
+  let row: { kind: "file" | "youtube"; url: string; storage_path: string | null };
+  if (input.storagePath) {
+    const path = videoPath.safeParse(input.storagePath);
+    if (!path.success || !path.data.startsWith(`products/${id}/`)) return { message: "נתיב הקובץ אינו תקין" };
+    row = { kind: "file", url: `${publicEnv().supabaseUrl}/storage/v1/object/public/product-videos/${path.data}`, storage_path: path.data };
+  } else {
+    const yt = youtubeId(input.youtube ?? "");
+    if (!yt) return { message: "קישור YouTube אינו תקין" };
+    row = { kind: "youtube", url: yt, storage_path: null };
+  }
+  const { data: last } = await db.from("product_videos").select("sort_order").eq("product_id", id).order("sort_order", { ascending: false }).limit(1);
+  const { error } = await db.from("product_videos").insert({
+    product_id: id,
+    ...row,
+    title: input.title?.trim().slice(0, 120) || null,
+    sort_order: (last?.[0]?.sort_order ?? -1) + 1,
+  });
+  if (error) return { message: dbMessage(error) };
+  updateTag("catalog");
+  return { ok: true };
+}
+
+export async function updateProductVideo(formData: FormData): Promise<void> {
+  await requireAdmin("catalog.manage");
+  const id = z.uuid().parse(formData.get("id"));
+  const productId = z.uuid().parse(formData.get("product_id"));
+  const intent = z.enum(["delete", "up", "down", "title"]).parse(formData.get("intent"));
+  const db = await createSessionClient();
+  if (intent === "delete") {
+    const { data: video } = await db.from("product_videos").delete().eq("id", id).eq("product_id", productId).select("storage_path").maybeSingle();
+    if (video?.storage_path) await db.storage.from("product-videos").remove([video.storage_path]);
+  } else if (intent === "title") {
+    await db.from("product_videos").update({ title: String(formData.get("title") ?? "").trim().slice(0, 120) || null }).eq("id", id).eq("product_id", productId);
+  } else {
+    const { data } = await db.from("product_videos").select("id").eq("product_id", productId).order("sort_order");
+    const list = data ?? [];
+    const i = list.findIndex((v) => v.id === id);
+    const j = intent === "up" ? i - 1 : i + 1;
+    if (i >= 0 && j >= 0 && j < list.length) {
+      [list[i], list[j]] = [list[j], list[i]];
+      for (const [order, v] of list.entries()) await db.from("product_videos").update({ sort_order: order }).eq("id", v.id);
+    }
+  }
+  updateTag("catalog");
+}

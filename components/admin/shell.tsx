@@ -1,12 +1,25 @@
 "use client";
 import { LogOut, Menu, Store } from "lucide-react";
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 import { Drawer } from "@/components/ui/drawer";
 import { signOut } from "@/features/admin/auth-actions";
 import { cn } from "@/lib/utils";
 import { ADMIN_NAV } from "./nav";
+
+// No route-level skeleton in the admin: a fallback would be held on screen
+// for a minimum time, which is slower than the server's answer. Instead the
+// clicked item reacts at once and a thin bar runs until the page arrives.
+function PendingHint() {
+  const { pending } = useLinkStatus();
+  return (
+    <>
+      <span aria-hidden className={cn("fixed inset-x-0 top-0 z-[70] h-0.5 origin-right bg-brand transition-opacity", pending ? "animate-[admin-progress_1.2s_ease-out_forwards] opacity-100" : "opacity-0")} />
+      <span aria-hidden className={cn("ms-auto size-1.5 rounded-full bg-current transition-opacity", pending ? "animate-pulse opacity-100" : "opacity-0")} />
+    </>
+  );
+}
 
 function Nav({ permissions, onNavigate }: { permissions: string[]; onNavigate?: () => void }) {
   const pathname = usePathname();
@@ -31,11 +44,12 @@ function Nav({ permissions, onNavigate }: { permissions: string[]; onNavigate?: 
                     onClick={onNavigate}
                     aria-current={item.href === activeHref ? "page" : undefined}
                     className={cn(
-                      "block rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
+                      "flex items-center rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
                       item.href === activeHref ? "bg-ink text-cream" : "hover:bg-sand",
                     )}
                   >
                     {item.label}
+                    <PendingHint />
                   </Link>
                 </li>
               ))}

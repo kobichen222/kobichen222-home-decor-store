@@ -20,17 +20,18 @@ export type Permission =
 
 export type AdminSession = { userId: string; email: string; permissions: Permission[] };
 
-// getUser() validates the token with the auth server (never trust the
-// cookie alone); permissions come from the database for that user.
+// getClaims() verifies the session token's signature (locally, with the
+// project's published signing keys; never trusting the cookie alone). The
+// permissions come from the database for that user. Both run once per
+// request thanks to cache().
 export const getAdmin = cache(async (): Promise<AdminSession | null> => {
   const supabase = await createSessionClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { data, error } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+  if (error || !claims?.sub) return null;
   const { data: permissions } = await supabase.rpc("my_permissions");
   if (!permissions?.length) return null;
-  return { userId: user.id, email: user.email ?? "", permissions: permissions as Permission[] };
+  return { userId: claims.sub, email: (claims.email as string | undefined) ?? "", permissions: permissions as Permission[] };
 });
 
 /** Gate for every admin page and every admin Server Action. */
