@@ -6,60 +6,58 @@ import { getCategories, getCollections, getProductGrid } from "@/features/catalo
 import type { PageSection } from "@/features/cms/queries";
 import { cn, safeInternalPath } from "@/lib/utils";
 import { NewsletterForm } from "./newsletter-form";
-import { ProductGrid } from "./product-card";
+import { Carousel } from "./carousel";
+import { ProductCard } from "./product-card";
+import { SectionHeading } from "./section-heading";
 
 type LinkData = { label?: string; href?: string };
 
-function SectionHeading({ title, href, linkLabel = "לכל המוצרים" }: { title: string | null; href?: string; linkLabel?: string }) {
-  if (!title) return null;
-  return (
-    <div className="mb-8 flex items-end justify-between gap-4 lg:mb-10">
-      <h2 className="text-2xl font-bold tracking-tight lg:text-[2rem]">{title}</h2>
-      {href && (
-        <Link href={safeInternalPath(href, "/shop")} className="group flex shrink-0 items-center gap-1.5 text-sm font-semibold text-brand">
-          {linkLabel}
-          <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" />
-        </Link>
-      )}
-    </div>
-  );
-}
+const EYEBROWS: Record<string, string> = {
+  bestsellers: "האהובים עליכם",
+  newest: "זה עתה הגיע",
+  sale: "לזמן מוגבל",
+  featured: "בחירת המעצבים",
+};
 
 function Hero({ data }: { data: Record<string, unknown> }) {
   const primary = data.primary as LinkData | undefined;
   const secondary = data.secondary as LinkData | undefined;
   return (
-    <section className="relative isolate overflow-hidden bg-sand">
-      <div className="absolute inset-0 -z-10">
-        <StoreImage
-          src={(data.image_url as string) ?? null}
-          alt={(data.image_alt as string) ?? ""}
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-[35%_center] lg:object-center"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-cream via-cream/55 to-transparent lg:bg-gradient-to-l lg:from-cream/95 lg:via-cream/60 lg:to-transparent" />
-      </div>
-      <div className="container-page flex min-h-[34rem] items-end pb-12 pt-40 lg:min-h-[40rem] lg:items-center lg:py-24">
-        <div className="max-w-xl">
-          {typeof data.eyebrow === "string" && (
-            <p className="mb-4 text-sm font-semibold tracking-[0.2em] text-brand">{data.eyebrow}</p>
-          )}
-          <h1 className="text-[2.4rem] font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-[3.6rem]">{data.title as string}</h1>
-          {typeof data.subtitle === "string" && <p className="mt-5 max-w-md text-lg text-ink-soft lg:text-xl">{data.subtitle}</p>}
-          <div className="mt-8 flex flex-wrap gap-3">
-            {primary?.label && (
-              <Link href={safeInternalPath(primary.href, "/shop")} className={buttonClass("primary", "lg")}>
-                {primary.label}
-              </Link>
+    <section className="bg-sand">
+      <div className="grid lg:min-h-[min(40rem,calc(100svh-10rem))] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
+        <div className="order-2 flex items-center px-4 pb-12 pt-9 sm:px-6 lg:order-1 lg:py-20 lg:pe-14 lg:ps-[max(2.5rem,calc((100vw-82rem)/2+2.5rem))]">
+          <div className="max-w-xl motion-safe:animate-[rise_0.9s_var(--ease-out-soft)_both]">
+            {typeof data.eyebrow === "string" && (
+              <p className="mb-4 flex items-center gap-3 text-xs font-semibold tracking-[0.24em] text-brand sm:text-sm">
+                <span aria-hidden className="h-px w-8 bg-gold" />
+                {data.eyebrow}
+              </p>
             )}
-            {secondary?.label && (
-              <Link href={safeInternalPath(secondary.href, "/shop")} className={buttonClass("outline", "lg", "bg-cream/70")}>
-                {secondary.label}
-              </Link>
-            )}
+            <h1 className="text-[2.3rem] font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-[3.1rem] xl:text-[3.5rem]">{data.title as string}</h1>
+            {typeof data.subtitle === "string" && <p className="mt-5 max-w-md text-lg text-ink-soft lg:text-xl">{data.subtitle}</p>}
+            <div className="mt-8 flex flex-wrap gap-3">
+              {primary?.label && (
+                <Link href={safeInternalPath(primary.href, "/shop")} className={buttonClass("primary", "lg", "max-sm:w-full")}>
+                  {primary.label}
+                </Link>
+              )}
+              {secondary?.label && (
+                <Link href={safeInternalPath(secondary.href, "/shop")} className={buttonClass("outline", "lg", "max-sm:w-full")}>
+                  {secondary.label}
+                </Link>
+              )}
+            </div>
           </div>
+        </div>
+        <div className="relative order-1 aspect-[5/4] overflow-hidden sm:aspect-[16/9] lg:order-2 lg:aspect-auto">
+          <StoreImage
+            src={(data.image_url as string) ?? null}
+            alt={(data.image_alt as string) ?? ""}
+            fill
+            priority
+            sizes="(min-width: 1024px) 58vw, 100vw"
+            className="object-cover object-center motion-safe:animate-[settle_1.6s_var(--ease-out-soft)_both]"
+          />
         </div>
       </div>
     </section>
@@ -71,25 +69,24 @@ async function Categories({ title }: { title: string | null }) {
   if (!categories.length) return null;
   return (
     <section className="container-page">
-      <SectionHeading title={title} />
-      <ul className="no-scrollbar -mx-4 flex snap-x gap-4 overflow-x-auto px-4 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-5 sm:overflow-visible sm:px-0 lg:grid-cols-4 xl:grid-cols-6">
+      <Carousel title={title} eyebrow="מה מחפשים היום?" href="/shop" linkLabel="לכל הקטגוריות" label="קטגוריות">
         {categories.map((c) => (
-          <li key={c.id} className="w-[42%] shrink-0 snap-start sm:w-auto">
+          <li key={c.id} className="w-[38%] shrink-0 snap-start sm:w-[calc((100%-3rem)/4)] lg:w-[calc((100%-7.5rem)/6)]">
             <Link href={`/category/${c.slug}`} className="group block">
               <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-sand">
                 <StoreImage
                   src={c.image_url}
                   alt=""
                   fill
-                  sizes="(min-width: 1280px) 16vw, (min-width: 640px) 30vw, 42vw"
+                  sizes="(min-width: 1024px) 15vw, (min-width: 640px) 24vw, 38vw"
                   className="object-cover transition-transform duration-700 ease-[var(--ease-out-soft)] group-hover:scale-105"
                 />
               </div>
-              <p className="mt-3 text-center font-semibold group-hover:text-brand">{c.name}</p>
+              <p className="mt-3 text-center font-semibold transition-colors group-hover:text-brand">{c.name}</p>
             </Link>
           </li>
         ))}
-      </ul>
+      </Carousel>
     </section>
   );
 }
@@ -100,29 +97,53 @@ async function ProductsSection({ title, data }: { title: string | null; data: Re
   if (!products.length) return null;
   return (
     <section className="container-page">
-      <SectionHeading title={title} href={data.href as string | undefined} />
-      <ProductGrid products={products} />
+      <Carousel title={title} eyebrow={EYEBROWS[source]} href={data.href as string | undefined} label={title ?? "מוצרים"}>
+        {products.map((p) => (
+          <li key={p.id} className="w-[64%] shrink-0 snap-start sm:w-[calc((100%-2rem)/3)] lg:w-[calc((100%-4.5rem)/4)]">
+            <ProductCard product={p} />
+          </li>
+        ))}
+      </Carousel>
     </section>
   );
 }
 
-function Rooms({ title, data }: { title: string | null; data: Record<string, unknown> }) {
+async function Rooms({ title, data }: { title: string | null; data: Record<string, unknown> }) {
   const items = (data.items as LinkData[] | undefined) ?? [];
+  if (!items.length) return null;
+  // Rooms usually point at categories: reuse the category picture as the tile.
+  const images = new Map((await getCategories()).map((c) => [`/category/${c.slug}`, c.image_url]));
   return (
     <section className="bg-sand py-14 lg:py-20">
       <div className="container-page">
-        <SectionHeading title={title} />
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 lg:gap-4">
-          {items.map((item) => (
-            <li key={item.href}>
-              <Link
-                href={safeInternalPath(item.href, "/shop")}
-                className="flex h-24 items-center justify-center rounded-xl border border-line bg-cream px-3 text-center font-display text-lg font-semibold transition-colors hover:border-brand hover:bg-brand hover:text-cream"
-              >
-                {item.label}
-              </Link>
-            </li>
-          ))}
+        <SectionHeading title={title} eyebrow="השראה לכל חלל" />
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:gap-5">
+          {items.map((item) => {
+            const href = safeInternalPath(item.href, "/shop");
+            const image = images.get(href.split("?")[0]) ?? null;
+            return (
+              <li key={item.href}>
+                <Link href={href} className="group relative block aspect-[4/3] overflow-hidden rounded-xl bg-cream lg:aspect-[16/10]">
+                  {image && (
+                    <StoreImage
+                      src={image}
+                      alt=""
+                      fill
+                      sizes="(min-width: 640px) 33vw, 50vw"
+                      className="object-cover transition-transform duration-700 ease-[var(--ease-out-soft)] group-hover:scale-105"
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink/55 via-ink/0 via-45% to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 p-4 text-cream lg:p-5">
+                    <span className="font-display text-lg font-bold lg:text-xl">{item.label}</span>
+                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-cream/90 text-ink transition-transform group-hover:-translate-x-1 max-sm:hidden">
+                      <ArrowLeft className="size-4" />
+                    </span>
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </section>
@@ -134,7 +155,7 @@ async function Collections({ title }: { title: string | null }) {
   if (!collections.length) return null;
   return (
     <section className="container-page">
-      <SectionHeading title={title} href="/collections" linkLabel="לכל הקולקציות" />
+      <SectionHeading title={title} eyebrow="סגנונות שאוהבים" href="/collections" linkLabel="לכל הקולקציות" />
       <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {collections.map((c) => (
           <li key={c.id}>
@@ -162,17 +183,22 @@ const ICONS = { truck: Truck, shield: ShieldCheck, gem: Gem, headset: Headset } 
 
 function Benefits({ title, data }: { title: string | null; data: Record<string, unknown> }) {
   const items = (data.items as { icon?: string; title: string; text: string }[] | undefined) ?? [];
+  if (!items.length) return null;
   return (
     <section className="container-page">
-      <SectionHeading title={title} />
-      <ul className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+      {title && <h2 className="sr-only">{title}</h2>}
+      <ul className="grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
         {items.map((item) => {
           const Icon = ICONS[item.icon as keyof typeof ICONS] ?? Gem;
           return (
-            <li key={item.title} className="border-t border-line pt-6">
-              <Icon className="size-7 text-gold" strokeWidth={1.4} />
-              <h3 className="mt-4 text-lg font-semibold">{item.title}</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{item.text}</p>
+            <li key={item.title} className="flex items-start gap-4 bg-cream p-6 lg:p-7">
+              <span className="grid size-12 shrink-0 place-items-center rounded-full bg-sand text-brand">
+                <Icon className="size-6" strokeWidth={1.5} />
+              </span>
+              <div>
+                <h3 className="font-sans text-base font-bold">{item.title}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-ink-soft">{item.text}</p>
+              </div>
             </li>
           );
         })}
@@ -239,7 +265,7 @@ export function HomeSections({ sections }: { sections: PageSection[] }) {
     <div className="space-y-16 lg:space-y-24">
       {sections.map((s) => {
         const wrap = (node: React.ReactNode) => (
-          <div key={s.id} className={cn(s.hide_on_mobile && "max-md:hidden")}>
+          <div key={s.id} className={cn(s.kind !== "hero" && "reveal", s.hide_on_mobile && "max-md:hidden")}>
             {node}
           </div>
         );
