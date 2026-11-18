@@ -181,6 +181,47 @@ function Benefits({ title, data }: { title: string | null; data: Record<string, 
   );
 }
 
+function TextImage({ title, data, banner }: { title: string | null; data: Record<string, unknown>; banner?: boolean }) {
+  const link = data.link as LinkData | undefined;
+  const image = typeof data.image_url === "string" && data.image_url ? data.image_url : null;
+  if (banner) {
+    return (
+      <section className="container-page">
+        <div className="relative isolate overflow-hidden rounded-2xl bg-ink text-cream">
+          {image && <StoreImage src={image} alt={(data.image_alt as string) ?? ""} fill sizes="100vw" className="-z-10 object-cover opacity-45" />}
+          <div className="max-w-xl px-6 py-14 sm:px-12 lg:py-20">
+            {title && <h2 className="text-3xl font-bold lg:text-4xl">{title}</h2>}
+            {typeof data.text === "string" && data.text && <p className="mt-3 text-lg text-cream/85">{data.text}</p>}
+            {link?.label && (
+              <Link href={safeInternalPath(link.href, "/shop")} className={buttonClass("outline", "lg", "mt-7 border-cream/60 text-cream hover:bg-cream hover:text-ink")}>
+                {link.label}
+              </Link>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  }
+  return (
+    <section className="container-page">
+      <div className={cn("grid items-center gap-8 lg:grid-cols-2 lg:gap-16", data.image_side === "end" && "lg:[&>*:first-child]:order-last")}>
+        <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-sand">
+          {image && <StoreImage src={image} alt={(data.image_alt as string) ?? ""} fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />}
+        </div>
+        <div>
+          {title && <h2 className="text-3xl font-bold tracking-tight">{title}</h2>}
+          {typeof data.text === "string" && data.text && <p className="mt-4 whitespace-pre-line text-lg leading-relaxed text-ink-soft">{data.text}</p>}
+          {link?.label && (
+            <Link href={safeInternalPath(link.href, "/shop")} className={buttonClass("primary", "lg", "mt-7")}>
+              {link.label}
+            </Link>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Newsletter({ title, data }: { title: string | null; data: Record<string, unknown> }) {
   return (
     <section className="container-page">
@@ -215,6 +256,10 @@ export function HomeSections({ sections }: { sections: PageSection[] }) {
             return wrap(<Collections title={s.title} />);
           case "benefits":
             return wrap(<Benefits title={s.title} data={s.data} />);
+          case "text_image":
+            return wrap(<TextImage title={s.title} data={s.data} />);
+          case "banner":
+            return wrap(<TextImage title={s.title} data={s.data} banner />);
           case "newsletter":
             return wrap(<Newsletter title={s.title} data={s.data} />);
           default:

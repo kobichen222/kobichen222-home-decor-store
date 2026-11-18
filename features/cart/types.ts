@@ -23,6 +23,8 @@ export type CartSummary = {
   item_count: number;
   subtotal: number;
   discount: number;
+  promotion: { name: string; discount: number } | null;
+  coupon_discount: number;
   coupon: { code: string; valid: boolean; message?: string; kind?: string; description?: string | null } | null;
   shipping: number;
   shipping_method: { id: string; name: string; kind: string; requires_address: boolean } | null;
@@ -37,6 +39,8 @@ export const EMPTY_CART: CartSummary = {
   item_count: 0,
   subtotal: 0,
   discount: 0,
+  promotion: null,
+  coupon_discount: 0,
   coupon: null,
   shipping: 0,
   shipping_method: null,

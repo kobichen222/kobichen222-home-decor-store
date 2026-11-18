@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { DailyBars } from "@/components/admin/charts";
+import { parseRange } from "@/features/admin/report-range";
 import { AdminHeader, Badge, Card, TableWrap } from "@/components/admin/ui";
 import { ORDER_STATUS_LABELS } from "@/features/orders/queries";
 import { can, requireAdmin } from "@/lib/auth/admin";
@@ -46,6 +48,15 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
       ? db.from("stock_alerts").select("id, kind, variant:product_variants(sku, name, product:products(id, name))").is("resolved_at", null).order("created_at", { ascending: false }).limit(8)
       : null,
   ]);
+  const seeReports = can(admin, "reports.view", "finance.view");
+  const last14 = parseRange({ range: "14" });
+  const [report, abandoned, lowStock, customers] = await Promise.all([
+    seeReports ? db.rpc("report_sales", { p_from: last14.from, p_to: last14.to }) : null,
+    can(admin, "marketing.manage") ? db.rpc("admin_abandoned_carts", { p_hours: 1 }) : null,
+    seeStock ? db.from("stock_alerts").select("id", { count: "exact", head: true }).is("resolved_at", null) : null,
+    can(admin, "customers.view") ? db.rpc("admin_customers", { p_segment: "new", p_limit: 1 }) : null,
+  ]);
+  const r14 = report?.data as unknown as { by_day: { day: string; revenue: number; orders: number }[]; aov: number; top_products: { name: string; units: number }[] } | null;
   const sum = (rows: { total: number }[] | null | undefined) => (rows ?? []).reduce((s, r) => s + Number(r.total), 0);
   const cards = seeOrders
     ? [
@@ -57,6 +68,10 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
         ["ממתינות לתשלום", unpaid?.count ?? 0],
       ]
     : [];
+  if (lowStock) cards.push(["התראות מלאי", lowStock.count ?? 0]);
+  if (customers?.data) cards.push(["לקוחות חדשים (30 יום)", (customers.data as unknown as { total: number }).total]);
+  if (abandoned?.data) cards.push(["סלים נטושים", (abandoned.data as unknown as unknown[]).length]);
+  if (r14) cards.push(["ממוצע הזמנה (14 יום)", formatPrice(r14.aov)]);
 
   return (
     <>
@@ -67,7 +82,7 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
         </p>
       )}
       {cards.length > 0 && (
-        <dl className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+        <dl className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
           {cards.map(([label, value]) => (
             <Card key={label} className="p-4">
               <dt className="text-xs font-semibold text-ink-soft">{label}</dt>
@@ -75,6 +90,15 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
             </Card>
           ))}
         </dl>
+      )}
+      {r14 && (
+        <Card className="mt-6 p-5">
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-bold">מכירות ב־14 הימים האחרונים</h2>
+            <Link href="/admin/reports" className="text-sm font-semibold text-brand hover:underline">לדוחות המלאים ←</Link>
+          </div>
+          <DailyBars data={r14.by_day} label="מכירות יומיות ב־14 הימים האחרונים" />
+        </Card>
       )}
       <div className="mt-6 grid gap-6 xl:grid-cols-[1.6fr_1fr]">
         {seeOrders && (

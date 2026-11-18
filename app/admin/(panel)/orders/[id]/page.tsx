@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { OrderNoteForm, OrderStatusForm } from "@/components/admin/order-actions";
+import { RefundForm } from "@/components/admin/small-forms";
 import { AdminHeader, Badge, Card } from "@/components/admin/ui";
 import { StoreImage } from "@/components/shared/store-image";
 import { buttonClass } from "@/components/ui/button";
@@ -19,6 +20,7 @@ const EVENT_LABELS: Record<string, string> = {
   note: "הערה פנימית",
   payment_amount_mismatch: "אי־התאמה בסכום התשלום",
   paid_after_cancellation: "תשלום התקבל לאחר ביטול. נדרש החזר",
+  refunded: "נרשם החזר כספי",
 };
 const REASONS: Record<string, string> = { expired: "פג תוקף שמירת המלאי", payment_failed: "התשלום נכשל", superseded: "הוחלפה בהזמנה חדשה", cancelled_by_admin: "בוטלה ידנית" };
 
@@ -29,11 +31,13 @@ export default async function OrderPage({ params }: PageProps<"/admin/orders/[id
   const db = await createSessionClient();
   const { data: order } = await db
     .from("orders")
-    .select("*, items:order_items(*), address:order_addresses(*), events:order_events(*), payments(*)")
+    .select("*, items:order_items(*), address:order_addresses(*), events:order_events(*), payments(*), refunds(*)")
     .eq("id", id)
     .maybeSingle();
   if (!order) notFound();
   const address = order.address[0];
+  const refunded = order.refunds.filter((r) => r.status === "succeeded").reduce((s, r) => s + Number(r.amount), 0);
+  const canRefund = can(admin, "orders.manage") && ["paid", "partially_refunded"].includes(order.payment_status) && order.total - refunded > 0;
   const events = [...order.events].sort((a, b) => a.created_at.localeCompare(b.created_at));
 
   return (
@@ -77,7 +81,7 @@ export default async function OrderPage({ params }: PageProps<"/admin/orders/[id
               </div>
               {order.discount_total > 0 && (
                 <div className="flex justify-between">
-                  <dt className="text-ink-soft">הנחה {order.coupon_code && `(${order.coupon_code})`}</dt>
+                  <dt className="text-ink-soft">הנחה {[order.promotion_name, order.coupon_code].filter(Boolean).join(" + ")}</dt>
                   <dd className="tabular-nums">−{formatPrice(order.discount_total)}</dd>
                 </div>
               )}
@@ -111,6 +115,13 @@ export default async function OrderPage({ params }: PageProps<"/admin/orders/[id
                         {ev.type === "cancelled" && data.reason && ` (${REASONS[data.reason] ?? data.reason})`}
                       </p>
                       {ev.type === "note" && <p className="whitespace-pre-wrap">{data.text}</p>}
+                      {ev.type === "refunded" && (
+                        <p>
+                          {formatPrice(Number(data.amount))}
+                          {data.reason && ` · ${data.reason}`}
+                          {String(data.restock) === "true" && " · הוחזר למלאי"}
+                        </p>
+                      )}
                       <p className="text-xs text-ink-soft">{formatDate(ev.created_at, true)}</p>
                     </div>
                   </li>
@@ -132,9 +143,16 @@ export default async function OrderPage({ params }: PageProps<"/admin/orders/[id
               <OrderStatusForm orderId={order.id} status={order.status} tracking={order.tracking_number} />
             </Card>
           )}
+          {canRefund && (
+            <Card className="p-5">
+              <h2 className="mb-3 font-bold">החזר כספי / החזרת מוצר</h2>
+              {refunded > 0 && <p className="mb-2 text-sm text-ink-soft">הוחזרו עד כה: {formatPrice(refunded)}</p>}
+              <RefundForm orderId={order.id} remaining={Math.round((order.total - refunded) * 100) / 100} />
+            </Card>
+          )}
           <Card className="space-y-1 p-5 text-sm">
             <h2 className="mb-2 text-base font-bold">לקוח</h2>
-            <p className="font-semibold">{order.customer_name}</p>
+            <Link href={`/admin/customers/${encodeURIComponent(order.customer_email)}`} className="font-semibold hover:text-brand">{order.customer_name}</Link>
             <p dir="ltr" className="text-end">
               <a href={`mailto:${order.customer_email}`} className="hover:text-brand">
                 {order.customer_email}

@@ -5,6 +5,7 @@ import { getStoreSettings } from "@/features/cms/queries";
 
 const INFO_LINKS = [
   ["אודות", "/about"],
+  ["בלוג והשראה", "/blog"],
   ["יצירת קשר", "/contact"],
   ["משלוחים", "/shipping"],
   ["החזרות וביטולים", "/returns"],

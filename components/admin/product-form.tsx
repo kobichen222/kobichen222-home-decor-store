@@ -9,6 +9,7 @@ import type { ProductForEdit, ProductFormOptions } from "@/features/admin/querie
 import { useFormAction } from "@/lib/use-form-action";
 import { formatOptions, parseOptions } from "@/lib/validations/product";
 import { cn } from "@/lib/utils";
+import { DateTimeField } from "./fields";
 import { Card } from "./ui";
 
 type VariantRow = {
@@ -37,7 +38,6 @@ const TABS = [
 ] as const;
 
 const str = (v: unknown) => (v === null || v === undefined ? "" : String(v));
-const localDateTime = (v: string | null) => (v ? new Date(new Date(v).getTime() - new Date(v).getTimezoneOffset() * 60000).toISOString().slice(0, 16) : "");
 let counter = 0;
 const newKey = () => `new-${++counter}`;
 
@@ -210,10 +210,10 @@ export function ProductForm({ product, options, canManageStock }: { product: Pro
                 <Input id="cost_price" name="cost_price" type="number" step="0.01" min="0" defaultValue={str(product?.private?.cost_price)} dir="ltr" />
               </Field>
               <Field label="תחילת המבצע" htmlFor="sale_starts_at" hint="ריק = מיידי">
-                <Input id="sale_starts_at" name="sale_starts_at" type="datetime-local" defaultValue={localDateTime(product?.sale_starts_at ?? null)} dir="ltr" />
+                <DateTimeField id="sale_starts_at" name="sale_starts_at" defaultValue={product?.sale_starts_at ?? null} />
               </Field>
               <Field label="סיום המבצע" htmlFor="sale_ends_at" hint="ריק = ללא הגבלה" error={e.sale_ends_at}>
-                <Input id="sale_ends_at" name="sale_ends_at" type="datetime-local" defaultValue={localDateTime(product?.sale_ends_at ?? null)} dir="ltr" />
+                <DateTimeField id="sale_ends_at" name="sale_ends_at" defaultValue={product?.sale_ends_at ?? null} />
               </Field>
             </div>
           </Tabs.Content>

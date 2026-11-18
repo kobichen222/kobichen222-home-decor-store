@@ -132,11 +132,20 @@ export function CartTotals({ showShipping = false }: { showShipping?: boolean })
         <dt className="text-ink-soft">סכום ביניים</dt>
         <dd className="tabular-nums">{formatPrice(cart.subtotal)}</dd>
       </div>
-      {cart.discount > 0 && (
+      {cart.promotion && cart.promotion.discount > 0 && (
+        <div className="flex justify-between text-success">
+          <dt>מבצע: {cart.promotion.name}</dt>
+          <dd className="tabular-nums">−{formatPrice(cart.promotion.discount)}</dd>
+        </div>
+      )}
+      {cart.coupon_discount > 0 && (
         <div className="flex justify-between text-success">
           <dt>הנחת קופון</dt>
-          <dd className="tabular-nums">−{formatPrice(cart.discount)}</dd>
+          <dd className="tabular-nums">−{formatPrice(cart.coupon_discount)}</dd>
         </div>
+      )}
+      {cart.promotion && cart.promotion.discount === 0 && (
+        <p className="text-success">מבצע: {cart.promotion.name}</p>
       )}
       {showShipping ? (
         <div className="flex justify-between">

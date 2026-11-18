@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { PageHeader } from "@/components/store/page-header";
+import { ContactForm } from "@/components/store/contact-form";
+import { RichText } from "@/components/store/rich-text";
 import { getPage, getStoreSettings } from "@/features/cms/queries";
 
 // CMS pages (about, shipping, returns, terms…). "contact" is always
@@ -63,15 +65,19 @@ async function Content({ params }: PageProps<"/[slug]">) {
       <PageHeader title={title} crumbs={[{ name: title, href: `/${slug}` }]} />
       <div className="container-page max-w-3xl space-y-8 py-10">
         {page?.body ? (
-          <div className="space-y-4 text-lg leading-relaxed">
-            {page.body.split(/\n{2,}/).map((p, i) => (
-              <p key={i}>{p}</p>
-            ))}
-          </div>
+          <RichText text={page.body} />
         ) : (
           slug !== "contact" && <p className="text-lg text-ink-soft">תוכן העמוד יעודכן בקרוב.</p>
         )}
-        {slug === "contact" && <Contact />}
+        {slug === "contact" && (
+          <>
+            <Contact />
+            <section className="rounded-2xl border border-line bg-white p-6">
+              <h2 className="mb-4 text-xl font-bold">השאירו פרטים ונחזור אליכם</h2>
+              <ContactForm />
+            </section>
+          </>
+        )}
       </div>
     </>
   );

@@ -188,10 +188,16 @@ export function CheckoutForm({ options }: { options: ShippingOption[] }) {
             <dt className="text-ink-soft">סכום ביניים</dt>
             <dd className="tabular-nums">{formatPrice(summary.subtotal)}</dd>
           </div>
-          {summary.discount > 0 && (
+          {summary.promotion && summary.promotion.discount > 0 && (
+            <div className="flex justify-between text-success">
+              <dt>מבצע: {summary.promotion.name}</dt>
+              <dd className="tabular-nums">−{formatPrice(summary.promotion.discount)}</dd>
+            </div>
+          )}
+          {summary.coupon_discount > 0 && (
             <div className="flex justify-between text-success">
               <dt>קופון {summary.coupon?.code}</dt>
-              <dd className="tabular-nums">−{formatPrice(summary.discount)}</dd>
+              <dd className="tabular-nums">−{formatPrice(summary.coupon_discount)}</dd>
             </div>
           )}
           <div className="flex justify-between">

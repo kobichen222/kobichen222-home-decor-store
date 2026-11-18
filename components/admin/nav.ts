@@ -1,19 +1,17 @@
 import type { Permission } from "@/lib/auth/admin";
 
-export type NavItem = { label: string; href?: string; permissions?: Permission[] };
+export type NavItem = { label: string; href: string; permissions?: Permission[] };
 export type NavGroup = { title: string; items: NavItem[] };
 
-// Full information architecture of the admin. Items without an href are
-// planned for later development stages and render as "בקרוב".
 export const ADMIN_NAV: NavGroup[] = [
   { title: "סקירה כללית", items: [{ label: "לוח בקרה", href: "/admin" }] },
   {
     title: "ניהול מכירות",
     items: [
       { label: "הזמנות", href: "/admin/orders", permissions: ["orders.view"] },
-      { label: "לקוחות" },
-      { label: "הצעות מחיר" },
-      { label: "החזרות" },
+      { label: "לקוחות", href: "/admin/customers", permissions: ["customers.view"] },
+      { label: "הצעות מחיר", href: "/admin/quotes", permissions: ["orders.manage"] },
+      { label: "החזרות", href: "/admin/returns", permissions: ["orders.view"] },
     ],
   },
   {
@@ -21,14 +19,45 @@ export const ADMIN_NAV: NavGroup[] = [
     items: [
       { label: "מוצרים", href: "/admin/products", permissions: ["catalog.manage"] },
       { label: "קטגוריות", href: "/admin/categories", permissions: ["catalog.manage"] },
+      { label: "קולקציות", href: "/admin/collections", permissions: ["catalog.manage"] },
+      { label: "מותגים", href: "/admin/brands", permissions: ["catalog.manage"] },
       { label: "מלאי", href: "/admin/inventory", permissions: ["inventory.manage"] },
-      { label: "קולקציות" },
-      { label: "מותגים" },
-      { label: "מדיה" },
+      { label: "מדיה", href: "/admin/media", permissions: ["catalog.manage", "content.manage"] },
     ],
   },
-  { title: "שיווק", items: [{ label: "קופונים" }, { label: "מבצעים" }, { label: "סלים נטושים" }, { label: "לידים" }] },
-  { title: "ניהול אתר", items: [{ label: "עמוד הבית" }, { label: "עמודים" }, { label: "באנרים" }, { label: "בלוג" }] },
-  { title: "נתונים", items: [{ label: "דוחות מכירה" }, { label: "דוחות מוצרים" }] },
-  { title: "הגדרות", items: [{ label: "פרטי החנות" }, { label: "משלוחים" }, { label: "משתמשים והרשאות" }, { label: "יומן פעילות" }] },
+  {
+    title: "שיווק",
+    items: [
+      { label: "קופונים", href: "/admin/coupons", permissions: ["marketing.manage"] },
+      { label: "מבצעים", href: "/admin/promotions", permissions: ["marketing.manage"] },
+      { label: "סלים נטושים", href: "/admin/abandoned-carts", permissions: ["marketing.manage"] },
+      { label: "לידים", href: "/admin/leads", permissions: ["marketing.manage"] },
+    ],
+  },
+  {
+    title: "ניהול אתר",
+    items: [
+      { label: "עמוד הבית", href: "/admin/home", permissions: ["content.manage"] },
+      { label: "עמודים", href: "/admin/pages", permissions: ["content.manage"] },
+      { label: "באנרים", href: "/admin/banners", permissions: ["content.manage"] },
+      { label: "בלוג", href: "/admin/blog", permissions: ["content.manage"] },
+      { label: "קטגוריות בלוג", href: "/admin/blog-categories", permissions: ["content.manage"] },
+    ],
+  },
+  {
+    title: "נתונים",
+    items: [
+      { label: "דוחות מכירה", href: "/admin/reports", permissions: ["reports.view", "finance.view"] },
+      { label: "דוחות מוצרים", href: "/admin/reports/products", permissions: ["reports.view", "catalog.manage"] },
+    ],
+  },
+  {
+    title: "הגדרות",
+    items: [
+      { label: "פרטי החנות", href: "/admin/settings", permissions: ["settings.manage"] },
+      { label: "משלוחים", href: "/admin/shipping", permissions: ["shipping.manage"] },
+      { label: "משתמשים והרשאות", href: "/admin/users", permissions: ["users.manage"] },
+      { label: "יומן פעילות", href: "/admin/audit-log", permissions: ["settings.manage", "users.manage"] },
+    ],
+  },
 ];

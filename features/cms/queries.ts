@@ -86,3 +86,38 @@ export async function getPageSections(slug: string): Promise<PageSection[]> {
   if (error) throw new Error(`getPageSections: ${error.message}`);
   return (data ?? []) as PageSection[];
 }
+
+/** Announcement-bar messages, managed in the admin under "באנרים". */
+export async function getAnnouncements(): Promise<{ id: string; title: string; link_url: string | null }[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("content");
+  const { data, error } = await createPublicClient()
+    .from("banners")
+    .select("id, title, link_url")
+    .eq("placement", "announcement")
+    .order("sort_order");
+  if (error) throw new Error(`getAnnouncements: ${error.message}`);
+  return data ?? [];
+}
+
+export type BlogPost = {
+  id: string; title: string; slug: string; excerpt: string | null; body: string | null; cover_image_url: string | null;
+  tags: string[]; published_at: string | null; seo_title: string | null; seo_description: string | null;
+  category: { name: string; slug: string } | null;
+};
+const POST_COLUMNS = "id, title, slug, excerpt, body, cover_image_url, tags, published_at, seo_title, seo_description, category:blog_categories(name, slug)";
+
+export async function getBlogPosts(): Promise<BlogPost[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("content");
+  // RLS returns only published posts whose publish time has passed.
+  const { data, error } = await createPublicClient().from("blog_posts").select(POST_COLUMNS).order("published_at", { ascending: false }).limit(200);
+  if (error) throw new Error(`getBlogPosts: ${error.message}`);
+  return (data ?? []) as unknown as BlogPost[];
+}
+
+export async function getBlogPost(slug: string): Promise<BlogPost | null> {
+  return (await getBlogPosts()).find((p) => p.slug === slug) ?? null;
+}

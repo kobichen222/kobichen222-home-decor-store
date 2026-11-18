@@ -223,14 +223,14 @@ isOneToOne: false
                   ]
                 },"business_quote_items": {
                   Row: {
-                    "description": string,"id": string,"quantity": number,"quote_id": string,"unit_price": number,"variant_id": string | null
+                    "description": string,"id": string,"quantity": number,"quote_id": string,"sort_order": number,"unit_price": number,"variant_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "description": string,"id"?: string,"quantity": number,"quote_id": string,"unit_price": number,"variant_id"?: string | null
+                    "description": string,"id"?: string,"quantity": number,"quote_id": string,"sort_order"?: number,"unit_price": number,"variant_id"?: string | null
                   }
                   Update: {
-                    "description"?: string,"id"?: string,"quantity"?: number,"quote_id"?: string,"unit_price"?: number,"variant_id"?: string | null
+                    "description"?: string,"id"?: string,"quantity"?: number,"quote_id"?: string,"sort_order"?: number,"unit_price"?: number,"variant_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -255,14 +255,14 @@ isOneToOne: false
                   ]
                 },"business_quotes": {
                   Row: {
-                    "created_at": string,"id": string,"lead_id": string | null,"notes": string | null,"status": string,"total": number,"updated_at": string,"user_id": string | null,"valid_until": string | null
+                    "company_name": string | null,"created_at": string,"customer_name": string | null,"email": string | null,"id": string,"lead_id": string | null,"notes": string | null,"phone": string | null,"quote_number": number | null,"status": string,"total": number,"updated_at": string,"user_id": string | null,"valid_until": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"id"?: string,"lead_id"?: string | null,"notes"?: string | null,"status"?: string,"total"?: number,"updated_at"?: string,"user_id"?: string | null,"valid_until"?: string | null
+                    "company_name"?: string | null,"created_at"?: string,"customer_name"?: string | null,"email"?: string | null,"id"?: string,"lead_id"?: string | null,"notes"?: string | null,"phone"?: string | null,"quote_number"?: number | null,"status"?: string,"total"?: number,"updated_at"?: string,"user_id"?: string | null,"valid_until"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"lead_id"?: string | null,"notes"?: string | null,"status"?: string,"total"?: number,"updated_at"?: string,"user_id"?: string | null,"valid_until"?: string | null
+                    "company_name"?: string | null,"created_at"?: string,"customer_name"?: string | null,"email"?: string | null,"id"?: string,"lead_id"?: string | null,"notes"?: string | null,"phone"?: string | null,"quote_number"?: number | null,"status"?: string,"total"?: number,"updated_at"?: string,"user_id"?: string | null,"valid_until"?: string | null
                   }
                   Relationships: [
                     {
@@ -441,14 +441,14 @@ isOneToOne: true
                   ]
                 },"customer_notes": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"id": string,"note": string,"user_id": string
+                    "created_at": string,"created_by": string | null,"email": string | null,"id": string,"note": string,"user_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"note": string,"user_id": string
+                    "created_at"?: string,"created_by"?: string | null,"email"?: string | null,"id"?: string,"note": string,"user_id"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"note"?: string,"user_id"?: string
+                    "created_at"?: string,"created_by"?: string | null,"email"?: string | null,"id"?: string,"note"?: string,"user_id"?: string | null
                   }
                   Relationships: [
                     
@@ -751,14 +751,14 @@ isOneToOne: false
                   ]
                 },"orders": {
                   Row: {
-                    "cancel_reason": string | null,"cart_id": string | null,"company_name": string | null,"company_number": string | null,"coupon_code": string | null,"created_at": string,"currency": string,"customer_email": string,"customer_name": string,"customer_note": string | null,"customer_phone": string,"customer_type": Database["public"]['Enums']["customer_type"],"discount_total": number,"id": string,"order_number": number,"paid_at": string | null,"payment_status": Database["public"]['Enums']["payment_status"],"placed_at": string,"public_token": string,"reservation_expires_at": string | null,"shipping_method_id": string | null,"shipping_method_name": string,"shipping_total": number,"status": Database["public"]['Enums']["order_status"],"subtotal": number,"total": number,"tracking_number": string | null,"updated_at": string,"user_id": string | null,"vat_amount": number,"vat_rate": number
+                    "cancel_reason": string | null,"cart_id": string | null,"company_name": string | null,"company_number": string | null,"coupon_code": string | null,"created_at": string,"currency": string,"customer_email": string,"customer_name": string,"customer_note": string | null,"customer_phone": string,"customer_type": Database["public"]['Enums']["customer_type"],"discount_total": number,"id": string,"order_number": number,"paid_at": string | null,"payment_status": Database["public"]['Enums']["payment_status"],"placed_at": string,"promotion_name": string | null,"public_token": string,"reservation_expires_at": string | null,"shipping_method_id": string | null,"shipping_method_name": string,"shipping_total": number,"status": Database["public"]['Enums']["order_status"],"subtotal": number,"total": number,"tracking_number": string | null,"updated_at": string,"user_id": string | null,"vat_amount": number,"vat_rate": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "cancel_reason"?: string | null,"cart_id"?: string | null,"company_name"?: string | null,"company_number"?: string | null,"coupon_code"?: string | null,"created_at"?: string,"currency"?: string,"customer_email": string,"customer_name": string,"customer_note"?: string | null,"customer_phone": string,"customer_type"?: Database["public"]['Enums']["customer_type"],"discount_total"?: number,"id"?: string,"order_number"?: number,"paid_at"?: string | null,"payment_status"?: Database["public"]['Enums']["payment_status"],"placed_at"?: string,"public_token"?: string,"reservation_expires_at"?: string | null,"shipping_method_id"?: string | null,"shipping_method_name": string,"shipping_total"?: number,"status"?: Database["public"]['Enums']["order_status"],"subtotal": number,"total": number,"tracking_number"?: string | null,"updated_at"?: string,"user_id"?: string | null,"vat_amount": number,"vat_rate": number
+                    "cancel_reason"?: string | null,"cart_id"?: string | null,"company_name"?: string | null,"company_number"?: string | null,"coupon_code"?: string | null,"created_at"?: string,"currency"?: string,"customer_email": string,"customer_name": string,"customer_note"?: string | null,"customer_phone": string,"customer_type"?: Database["public"]['Enums']["customer_type"],"discount_total"?: number,"id"?: string,"order_number"?: number,"paid_at"?: string | null,"payment_status"?: Database["public"]['Enums']["payment_status"],"placed_at"?: string,"promotion_name"?: string | null,"public_token"?: string,"reservation_expires_at"?: string | null,"shipping_method_id"?: string | null,"shipping_method_name": string,"shipping_total"?: number,"status"?: Database["public"]['Enums']["order_status"],"subtotal": number,"total": number,"tracking_number"?: string | null,"updated_at"?: string,"user_id"?: string | null,"vat_amount": number,"vat_rate": number
                   }
                   Update: {
-                    "cancel_reason"?: string | null,"cart_id"?: string | null,"company_name"?: string | null,"company_number"?: string | null,"coupon_code"?: string | null,"created_at"?: string,"currency"?: string,"customer_email"?: string,"customer_name"?: string,"customer_note"?: string | null,"customer_phone"?: string,"customer_type"?: Database["public"]['Enums']["customer_type"],"discount_total"?: number,"id"?: string,"order_number"?: number,"paid_at"?: string | null,"payment_status"?: Database["public"]['Enums']["payment_status"],"placed_at"?: string,"public_token"?: string,"reservation_expires_at"?: string | null,"shipping_method_id"?: string | null,"shipping_method_name"?: string,"shipping_total"?: number,"status"?: Database["public"]['Enums']["order_status"],"subtotal"?: number,"total"?: number,"tracking_number"?: string | null,"updated_at"?: string,"user_id"?: string | null,"vat_amount"?: number,"vat_rate"?: number
+                    "cancel_reason"?: string | null,"cart_id"?: string | null,"company_name"?: string | null,"company_number"?: string | null,"coupon_code"?: string | null,"created_at"?: string,"currency"?: string,"customer_email"?: string,"customer_name"?: string,"customer_note"?: string | null,"customer_phone"?: string,"customer_type"?: Database["public"]['Enums']["customer_type"],"discount_total"?: number,"id"?: string,"order_number"?: number,"paid_at"?: string | null,"payment_status"?: Database["public"]['Enums']["payment_status"],"placed_at"?: string,"promotion_name"?: string | null,"public_token"?: string,"reservation_expires_at"?: string | null,"shipping_method_id"?: string | null,"shipping_method_name"?: string,"shipping_total"?: number,"status"?: Database["public"]['Enums']["order_status"],"subtotal"?: number,"total"?: number,"tracking_number"?: string | null,"updated_at"?: string,"user_id"?: string | null,"vat_amount"?: number,"vat_rate"?: number
                   }
                   Relationships: [
                     {
@@ -1125,17 +1125,35 @@ isOneToOne: false
                   ]
                 },"promotions": {
                   Row: {
-                    "created_at": string,"ends_at": string | null,"id": string,"is_active": boolean,"kind": string,"name": string,"starts_at": string | null,"value": number
+                    "category_id": string | null,"created_at": string,"description": string | null,"ends_at": string | null,"id": string,"is_active": boolean,"kind": string,"min_subtotal": number,"name": string,"product_id": string | null,"starts_at": string | null,"updated_at": string,"value": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"ends_at"?: string | null,"id"?: string,"is_active"?: boolean,"kind": string,"name": string,"starts_at"?: string | null,"value"?: number
+                    "category_id"?: string | null,"created_at"?: string,"description"?: string | null,"ends_at"?: string | null,"id"?: string,"is_active"?: boolean,"kind": string,"min_subtotal"?: number,"name": string,"product_id"?: string | null,"starts_at"?: string | null,"updated_at"?: string,"value"?: number
                   }
                   Update: {
-                    "created_at"?: string,"ends_at"?: string | null,"id"?: string,"is_active"?: boolean,"kind"?: string,"name"?: string,"starts_at"?: string | null,"value"?: number
+                    "category_id"?: string | null,"created_at"?: string,"description"?: string | null,"ends_at"?: string | null,"id"?: string,"is_active"?: boolean,"kind"?: string,"min_subtotal"?: number,"name"?: string,"product_id"?: string | null,"starts_at"?: string | null,"updated_at"?: string,"value"?: number
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "promotions_category_id_fkey"
+      columns: ["category_id"]
+isOneToOne: false
+      referencedRelation: "categories"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "promotions_product_id_fkey"
+      columns: ["product_id"]
+isOneToOne: false
+      referencedRelation: "catalog_products"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "promotions_product_id_fkey"
+      columns: ["product_id"]
+isOneToOne: false
+      referencedRelation: "products"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"redirects": {
                   Row: {
@@ -1429,6 +1447,21 @@ isOneToOne: false
 "_release_order":
 { Args: { "p_order_id": string }; Returns: undefined
                            },
+"admin_abandoned_carts":
+{ Args: { "p_hours"?: number }; Returns: Json
+                           },
+"admin_audit_log":
+{ Args: { "p_actor"?: string,"p_entity"?: string,"p_limit"?: number,"p_offset"?: number }; Returns: Json
+                           },
+"admin_customers":
+{ Args: { "p_limit"?: number,"p_offset"?: number,"p_q"?: string,"p_segment"?: string }; Returns: Json
+                           },
+"admin_list_users":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"admin_record_refund":
+{ Args: { "p_amount": number,"p_order_id": string,"p_reason": string,"p_restock"?: boolean }; Returns: Json
+                           },
 "admin_set_order_status":
 { Args: { "p_order_id": string,"p_status": Database["public"]['Enums']["order_status"],"p_tracking"?: string }; Returns: {
               "cancel_reason": string | null,
@@ -1449,6 +1482,7 @@ isOneToOne: false
 "paid_at": string | null,
 "payment_status": Database["public"]['Enums']["payment_status"],
 "placed_at": string,
+"promotion_name": string | null,
 "public_token": string,
 "reservation_expires_at": string | null,
 "shipping_method_id": string | null,
@@ -1541,6 +1575,9 @@ isOneToOne: false
 "is_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"is_owner":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
 "my_permissions":
 { Args: Record<PropertyKey, never>; Returns: (string)[]
                            },
@@ -1552,6 +1589,12 @@ isOneToOne: false
                            },
 "release_expired_orders":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"report_products":
+{ Args: { "p_from": string,"p_to": string }; Returns: Json
+                           },
+"report_sales":
+{ Args: { "p_from": string,"p_to": string }; Returns: Json
                            },
 "store_setting":
 { Args: { "p_key": string }; Returns: Json

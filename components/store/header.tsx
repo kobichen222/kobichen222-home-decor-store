@@ -2,13 +2,13 @@ import { Phone, Search } from "lucide-react";
 import Form from "next/form";
 import Link from "next/link";
 import { getCategories } from "@/features/catalog/queries";
-import { getStoreSettings } from "@/features/cms/queries";
+import { getAnnouncements, getStoreSettings } from "@/features/cms/queries";
 import { AnnouncementBar } from "./announcement-bar";
 import { CartButton } from "./cart-drawer";
 import { MobileMenu } from "./mobile-menu";
 
 export async function Header() {
-  const [settings, categories] = await Promise.all([getStoreSettings(), getCategories()]);
+  const [settings, categories, announcements] = await Promise.all([getStoreSettings(), getCategories(), getAnnouncements()]);
   const tree = categories
     .filter((c) => !c.parent_id)
     .map((c) => ({
@@ -19,7 +19,7 @@ export async function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-cream/95 backdrop-blur supports-[backdrop-filter]:bg-cream/85">
-      <AnnouncementBar messages={settings.announcements} />
+      <AnnouncementBar messages={announcements} />
       <div className="container-page flex h-16 items-center gap-2 lg:h-[4.5rem] lg:gap-8">
         <MobileMenu categories={tree} />
         <Link href="/" className="font-display text-[1.45rem] font-bold tracking-tight lg:text-[1.65rem]" aria-label={`${settings.business.name}, לעמוד הבית`}>
