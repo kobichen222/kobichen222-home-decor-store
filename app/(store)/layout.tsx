@@ -3,6 +3,7 @@ import { CartDrawer } from "@/components/store/cart-drawer";
 import { CartHydrator, CartProvider } from "@/components/store/cart-context";
 import { Footer } from "@/components/store/footer";
 import { Header } from "@/components/store/header";
+import { ScrollToTop } from "@/components/store/scroll-to-top";
 import { WhatsAppButton } from "@/components/store/whatsapp-button";
 import { getCart } from "@/features/cart/server";
 
@@ -16,6 +17,9 @@ async function CartLoader() {
 export default function StoreLayout({ children }: LayoutProps<"/">) {
   return (
     <CartProvider>
+      <Suspense fallback={null}>
+        <ScrollToTop />
+      </Suspense>
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-ink focus:px-5 focus:py-2.5 focus:text-cream"
