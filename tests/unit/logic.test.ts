@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { isIndexableListing, listingQuery, parseListingParams } from "@/features/catalog/params";
+import { parseCsv, toCsv } from "@/lib/csv";
 import { sign, verifySignature } from "@/lib/payments/signature";
 import { safeInternalPath } from "@/lib/utils";
 import { checkoutSchema } from "@/lib/validations/checkout";
@@ -87,5 +88,19 @@ describe("product validation", () => {
   it("parses variant options text", () => {
     expect(parseOptions("צבע: שחור, מידה: 60×90")).toEqual({ צבע: "שחור", מידה: "60×90" });
     expect(parseOptions("garbage")).toEqual({});
+  });
+});
+
+describe("csv", () => {
+  it("parses quotes, escaped quotes, CRLF, BOM and a bare quote inside a field", () => {
+    expect(parseCsv('\uFEFFמק"ט,שם\r\nA-1,"שעון, גדול"\r\nA-2,"אמר ""שלום"""\n\n')).toEqual([
+      ['מק"ט', "שם"],
+      ["A-1", "שעון, גדול"],
+      ["A-2", 'אמר "שלום"'],
+    ]);
+  });
+  it("round-trips and neutralises spreadsheet formulas", () => {
+    const csv = toCsv(["a", "b"], [["x,y", '=HYPERLINK("http://evil")'], [null, 5]]);
+    expect(parseCsv(csv)).toEqual([["a", "b"], ["x,y", `'=HYPERLINK("http://evil")`], ["", "5"]]);
   });
 });

@@ -11,7 +11,7 @@ export function parseCsv(text: string): string[][] {
       if (c === '"' && s[i + 1] === '"') { cell += '"'; i++; }
       else if (c === '"') quoted = false;
       else cell += c;
-    } else if (c === '"') quoted = true;
+    } else if (c === '"' && cell === "") quoted = true; // a quote opens a quoted field only at its start
     else if (c === ",") { row.push(cell); cell = ""; }
     else if (c === "\n" || c === "\r") {
       if (c === "\r" && s[i + 1] === "\n") i++;

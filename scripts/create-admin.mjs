@@ -33,9 +33,9 @@ if (created.error) {
 } else {
   userId = created.data.user.id;
 }
-const { data: roleRow } = await db.from("admin_roles").select("id, name").eq("code", role).single();
+const { data: roleRow, error: roleError } = await db.from("admin_roles").select("id, name").eq("code", role).maybeSingle();
 if (!roleRow) {
-  console.error(`Unknown role "${role}"`);
+  console.error(roleError ? `Could not read roles: ${roleError.message}` : `Unknown role "${role}"`);
   process.exit(1);
 }
 const { error } = await db.from("admin_user_roles").upsert({ user_id: userId, role_id: roleRow.id });
