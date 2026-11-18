@@ -161,3 +161,9 @@
     }
   }
 }
+
+/* See NavCloser: keeps a just-used mega menu shut until the pointer leaves. */
+#main-nav[data-closed] .mega-panel {
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
