@@ -6,6 +6,8 @@ import { PageHeader } from "@/components/store/page-header";
 import { ContactForm } from "@/components/store/contact-form";
 import { RichText } from "@/components/store/rich-text";
 import { getPage, getStoreSettings } from "@/features/cms/queries";
+import { FileText } from "lucide-react";
+import { EmptyState } from "@/components/store/empty-state";
 
 // CMS pages (about, shipping, returns, terms…). "contact" is always
 // available and shows the business details from the store settings.
@@ -67,7 +69,9 @@ async function Content({ params }: PageProps<"/[slug]">) {
         {page?.body ? (
           <RichText text={page.body} />
         ) : (
-          slug !== "contact" && <p className="text-lg text-ink-soft">תוכן העמוד יעודכן בקרוב.</p>
+          slug !== "contact" && (
+            <EmptyState icon={FileText} title="העמוד בעבודה" text="התוכן יעלה בקרוב. בינתיים אפשר להמשיך לגלות את הקולקציות שלנו." actions={[{ href: "/shop", label: "לכל המוצרים" }, { href: "/contact", label: "יצירת קשר" }]} />
+          )
         )}
         {slug === "contact" && (
           <>

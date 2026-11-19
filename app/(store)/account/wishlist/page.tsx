@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { AccountShell } from "@/components/store/account-nav";
 import { ProductGrid } from "@/components/store/product-card";
-import { buttonClass } from "@/components/ui/button";
 import type { ProductCard } from "@/features/catalog/types";
 import { getCustomer } from "@/lib/auth/customer";
 import { createSessionClient } from "@/lib/supabase/server";
+import { Heart } from "lucide-react";
+import { EmptyState } from "@/components/store/empty-state";
 
 export const metadata: Metadata = { title: "המועדפים שלי", robots: { index: false } };
 
@@ -21,11 +21,7 @@ async function Wishlist() {
   return (
     <AccountShell active="/account/wishlist" title="המועדפים שלי">
       {!products?.length ? (
-        <div className="rounded-2xl bg-sand px-6 py-14 text-center">
-          <p className="font-semibold">עדיין לא שמרתם מוצרים</p>
-          <p className="mt-1 text-sm text-ink-soft">לחצו על הלב במוצר כדי לשמור אותו כאן.</p>
-          <Link href="/shop" className={buttonClass("primary", "md", "mt-5")}>לחנות</Link>
-        </div>
+        <EmptyState icon={Heart} title="עדיין לא שמרתם מוצרים" text="לחצו על הלב במוצר שאהבתם, והוא יחכה לכם כאן." actions={[{ href: "/shop", label: "לחנות" }]} />
       ) : (
         <ProductGrid products={products as unknown as ProductCard[]} />
       )}

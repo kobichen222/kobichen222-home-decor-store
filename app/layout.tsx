@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: { default: "בית ועיצוב · עיצוב הבית, המשרד והעסק", template: "%s · בית ועיצוב" },
   description: "מוצרים נבחרים לעיצוב הבית, המשרד והעסק. משלוחים לכל הארץ.",
   openGraph: { type: "website", locale: "he_IL", siteName: "בית ועיצוב" },
+  twitter: { card: "summary_large_image" },
   alternates: { canonical: "/" },
 };
 

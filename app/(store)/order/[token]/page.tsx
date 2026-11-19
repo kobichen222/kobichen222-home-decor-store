@@ -1,9 +1,12 @@
-import { CheckCircle2, Clock, XCircle } from "lucide-react";
+import { CheckCircle2, Clock, Mail, MessageCircle, Phone, XCircle } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { StoreImage } from "@/components/shared/store-image";
+import { CartCleared } from "@/components/store/cart-context";
+import { OrderProgress } from "@/components/store/order-progress";
+import { getStoreSettings } from "@/features/cms/queries";
 import { buttonClass } from "@/components/ui/button";
 import { getOrderByToken, ORDER_STATUS_LABELS, PAYMENT_STATUS_LABELS } from "@/features/orders/queries";
 import { isMockPayments } from "@/lib/payments";
@@ -13,7 +16,7 @@ export const metadata: Metadata = { title: "פרטי הזמנה", robots: { inde
 
 async function Order({ params }: PageProps<"/order/[token]">) {
   const { token } = await params;
-  const order = await getOrderByToken(token);
+  const [order, { business }] = await Promise.all([getOrderByToken(token), getStoreSettings()]);
   if (!order) notFound();
 
   const paid = order.payment_status === "paid" && order.status !== "cancelled";
@@ -23,15 +26,18 @@ async function Order({ params }: PageProps<"/order/[token]">) {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <div className="text-center">
-        <Icon className={`mx-auto size-14 ${paid ? "text-success" : pending ? "text-gold" : "text-danger"}`} strokeWidth={1.3} />
-        <h1 className="mt-4 text-3xl font-bold">
+      {order.payment_status !== "failed" && <CartCleared />}
+      <div className="rounded-3xl bg-sand px-5 py-10 text-center sm:px-10">
+        <span className={`mx-auto grid size-20 place-items-center rounded-full bg-cream motion-safe:animate-[rise_.7s_var(--ease-out-soft)_both] ${paid ? "text-success" : pending ? "text-gold" : "text-danger"}`}>
+          <Icon className="size-11" strokeWidth={1.4} />
+        </span>
+        <h1 className="mt-5 text-3xl font-bold sm:text-4xl">
           {paid ? "תודה! ההזמנה התקבלה" : pending ? "ההזמנה ממתינה לתשלום" : order.payment_status === "failed" ? "התשלום לא הושלם" : "ההזמנה בוטלה"}
         </h1>
         <p className="mt-2 text-lg text-ink-soft">
           הזמנה מספר <strong className="text-ink tabular-nums" data-testid="order-number">{order.order_number}</strong> · {formatDate(order.placed_at, true)}
         </p>
-        {paid && <p className="mt-1 text-ink-soft">שמרו את כתובת העמוד הזה כדי לעקוב אחר סטטוס ההזמנה.</p>}
+        {paid && <p className="mt-1 text-ink-soft">אישור נשלח אליכם בדוא״ל. בעמוד הזה אפשר לעקוב אחרי ההזמנה בכל רגע.</p>}
         {order.payment_status === "failed" && (
           <p className="mt-1 text-ink-soft">לא בוצע חיוב. המוצרים עדיין בסל שלכם ואפשר לנסות שוב.</p>
         )}
@@ -63,7 +69,28 @@ async function Order({ params }: PageProps<"/order/[token]">) {
         </div>
       </div>
 
-      <div className="mt-10 rounded-2xl border border-line bg-white p-5 sm:p-7">
+      {paid && (
+        <div className="mt-8 rounded-2xl border border-line bg-white p-5 sm:p-7">
+          <h2 className="mb-6 text-lg font-bold">מה קורה עכשיו?</h2>
+          <OrderProgress status={order.status} pickup={!address} />
+          <ul className="mt-7 grid gap-3 text-sm text-ink-soft sm:grid-cols-3">
+            <li className="rounded-xl bg-sand/60 p-4">
+              <strong className="block text-ink">אנחנו מכינים את ההזמנה</strong>
+              כל פריט נבדק ונארז בקפידה לפני היציאה.
+            </li>
+            <li className="rounded-xl bg-sand/60 p-4">
+              <strong className="block text-ink">{address ? "עדכון כשהיא בדרך" : "הודעה כשהיא מוכנה"}</strong>
+              {address ? "נשלח לכם הודעה עם מספר מעקב ברגע שהמשלוח יוצא." : "נודיע לכם ברגע שאפשר לבוא לאסוף."}
+            </li>
+            <li className="rounded-xl bg-sand/60 p-4">
+              <strong className="block text-ink">שאלה? אנחנו כאן</strong>
+              מענה אישי בטלפון, בוואטסאפ או במייל.
+            </li>
+          </ul>
+        </div>
+      )}
+
+      <div className="mt-8 rounded-2xl border border-line bg-white p-5 sm:p-7">
         <h2 className="text-lg font-bold">פירוט ההזמנה</h2>
         <ul className="mt-3 divide-y divide-line">
           {order.items.map((item) => (
@@ -115,6 +142,27 @@ async function Order({ params }: PageProps<"/order/[token]">) {
           </div>
         )}
       </div>
+
+      {(business.phone || business.whatsapp || business.email) && (
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-2 text-sm">
+          <span className="text-ink-soft">צריכים עזרה עם ההזמנה?</span>
+          {business.phone && (
+            <a href={`tel:${business.phone.replace(/[^\d+]/g, "")}`} className="flex items-center gap-1.5 rounded-full border border-line bg-white px-3.5 py-2 font-semibold">
+              <Phone className="size-4" strokeWidth={1.7} /> {business.phone}
+            </a>
+          )}
+          {business.whatsapp && (
+            <a href={`https://wa.me/${business.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 rounded-full border border-line bg-white px-3.5 py-2 font-semibold">
+              <MessageCircle className="size-4" strokeWidth={1.7} /> וואטסאפ
+            </a>
+          )}
+          {business.email && (
+            <a href={`mailto:${business.email}`} className="flex items-center gap-1.5 rounded-full border border-line bg-white px-3.5 py-2 font-semibold">
+              <Mail className="size-4" strokeWidth={1.7} /> מייל
+            </a>
+          )}
+        </div>
+      )}
     </div>
   );
 }

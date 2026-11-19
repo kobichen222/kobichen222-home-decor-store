@@ -4,6 +4,8 @@ import { StoreImage } from "@/components/shared/store-image";
 import { PageHeader } from "@/components/store/page-header";
 import { getBlogPosts } from "@/features/cms/queries";
 import { formatDate } from "@/lib/utils";
+import { BookOpen } from "lucide-react";
+import { EmptyState } from "@/components/store/empty-state";
 
 export const metadata: Metadata = {
   title: "בלוג והשראה",
@@ -18,7 +20,7 @@ export default async function BlogPage() {
       <PageHeader title="בלוג והשראה" description="מדריכים, רעיונות והשראה לעיצוב הבית, המשרד והעסק." crumbs={[{ name: "בלוג", href: "/blog" }]} />
       <div className="container-page py-10">
         {!posts.length ? (
-          <p className="rounded-2xl bg-sand px-6 py-16 text-center text-ink-soft">מאמרים חדשים יעלו בקרוב.</p>
+          <EmptyState icon={BookOpen} title="מאמרי השראה בדרך" text="מדריכים, טיפים ורעיונות לעיצוב יעלו כאן בקרוב." actions={[{ href: "/collections", label: "לקולקציות" }, { href: "/shop", label: "לכל המוצרים" }]} />
         ) : (
           <ul className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {posts.map((p) => (

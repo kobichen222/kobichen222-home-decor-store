@@ -54,7 +54,7 @@ test("owner creates a product and it goes live on the storefront", async ({ page
   await page.getByRole("button", { name: "ארכיון" }).click();
   await expect(page.getByText("לא נמצאו מוצרים")).toBeVisible();
   await page.goto(`/product/test-mirror-${stamp}`);
-  await expect(page.getByRole("heading", { name: "העמוד לא נמצא" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "העמוד הזה לא נמצא" })).toBeVisible();
 });
 
 test("catalog manager cannot open orders", async ({ page }) => {

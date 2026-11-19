@@ -87,3 +87,15 @@ export function CartHydrator({ cart, freeShippingFrom = null }: { cart: CartSumm
   React.useEffect(() => hydrate(cart, freeShippingFrom), [cart, freeShippingFrom]); // eslint-disable-line react-hooks/exhaustive-deps
   return null;
 }
+
+/**
+ * The cart becomes an order on the server; the badge in the header is
+ * client state from the first page load, so empty it here too.
+ */
+export function CartCleared() {
+  const { hydrate, cart } = useCart();
+  React.useEffect(() => {
+    if (cart.items.length) hydrate(EMPTY_CART);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  return null;
+}

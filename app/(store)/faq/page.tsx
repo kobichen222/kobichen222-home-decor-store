@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { JsonLd, PageHeader } from "@/components/store/page-header";
 import { getGeneralFaqs } from "@/features/catalog/reviews";
+import { MessageCircleQuestion } from "lucide-react";
+import { EmptyState } from "@/components/store/empty-state";
 
 export const metadata: Metadata = { title: "שאלות נפוצות", alternates: { canonical: "/faq" } };
 
@@ -26,7 +28,7 @@ export default async function FaqPage() {
             ))}
           </div>
         ) : (
-          <p className="text-ink-soft">שאלות נפוצות יתווספו בקרוב.</p>
+          <EmptyState icon={MessageCircleQuestion} title="יש לכם שאלה?" text="השאלות הנפוצות יתווספו בקרוב. עד אז נשמח לענות אישית." actions={[{ href: "/contact", label: "יצירת קשר" }]} />
         )}
       </div>
     </>
