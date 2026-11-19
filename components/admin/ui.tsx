@@ -23,14 +23,21 @@ export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElemen
   return <div className={cn("rounded-2xl border border-line bg-white", className)} {...props} />;
 }
 
-// On small screens tables scroll horizontally inside their card.
+// On small screens tables scroll horizontally inside their card; the first
+// column (what the row is) stays pinned so the row is never anonymous, and a
+// hint says there is more to the side.
 export function TableWrap({ children }: { children: React.ReactNode }) {
   return (
-    <Card className="overflow-x-auto">
-      <table className="w-full min-w-[40rem] text-sm [&_td]:px-4 [&_td]:py-3 [&_th]:px-4 [&_th]:py-3 [&_th]:text-start [&_th]:text-xs [&_th]:font-bold [&_th]:text-ink-soft [&_tbody_tr]:border-t [&_tbody_tr]:border-line">
-        {children}
-      </table>
-    </Card>
+    <div>
+      <p className="mb-1.5 flex items-center gap-1 text-xs text-ink-soft md:hidden" aria-hidden="true">
+        ← החליקו לצפייה בכל העמודות
+      </p>
+      <Card className="overflow-x-auto">
+        <table className="w-full min-w-[40rem] text-sm [&_td]:px-4 [&_td]:py-3 [&_th]:px-4 [&_th]:py-3 [&_th]:text-start [&_th]:text-xs [&_th]:font-bold [&_th]:text-ink-soft [&_tbody_tr]:border-t [&_tbody_tr]:border-line max-md:[&_td]:whitespace-nowrap max-md:[&_td:first-child]:whitespace-normal max-md:[&_td:first-child]:min-w-[9rem] max-md:[&_td:first-child]:max-w-[11rem] max-md:[&_td:first-child]:sticky max-md:[&_td:first-child]:start-0 max-md:[&_td:first-child]:z-[1] max-md:[&_td:first-child]:bg-white max-md:[&_td:first-child]:shadow-[-8px_0_12px_-10px_rgb(0_0_0/0.25)] max-md:[&_th:first-child]:sticky max-md:[&_th:first-child]:start-0 max-md:[&_th:first-child]:z-[1] max-md:[&_th:first-child]:bg-white [&_tbody_tr:hover]:bg-sand/30">
+          {children}
+        </table>
+      </Card>
+    </div>
   );
 }
 

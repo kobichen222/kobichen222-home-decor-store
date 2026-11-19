@@ -1,3 +1,4 @@
+import { AlertTriangle, Banknote, CalendarRange, Clock, PackageOpen, Receipt, ShoppingBag, ShoppingCart, Truck, UserPlus, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { DailyBars } from "@/components/admin/charts";
 import { parseRange } from "@/features/admin/report-range";
@@ -58,20 +59,21 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
   ]);
   const r14 = report?.data as unknown as { by_day: { day: string; revenue: number; orders: number }[]; aov: number; top_products: { name: string; units: number }[] } | null;
   const sum = (rows: { total: number }[] | null | undefined) => (rows ?? []).reduce((s, r) => s + Number(r.total), 0);
-  const cards = seeOrders
+  type Kpi = { label: string; value: React.ReactNode; href?: string; icon: LucideIcon; tone?: "alert" };
+  const cards: Kpi[] = seeOrders
     ? [
-        ["מכירות היום", formatPrice(sum(today?.data))],
-        ["מכירות החודש", formatPrice(sum(month?.data))],
-        ["הזמנות חדשות", fresh?.count ?? 0],
-        ["הזמנות בטיפול", inProgress?.count ?? 0],
-        ["נשלחו / נמסרו", done?.count ?? 0],
-        ["ממתינות לתשלום", unpaid?.count ?? 0],
+        { label: "מכירות היום", value: formatPrice(sum(today?.data)), icon: Banknote, href: seeReports ? "/admin/reports" : undefined },
+        { label: "מכירות החודש", value: formatPrice(sum(month?.data)), icon: CalendarRange, href: seeReports ? "/admin/reports" : undefined },
+        { label: "הזמנות חדשות", value: fresh?.count ?? 0, icon: ShoppingBag, href: "/admin/orders?status=paid", tone: (fresh?.count ?? 0) > 0 ? "alert" : undefined },
+        { label: "הזמנות בטיפול", value: inProgress?.count ?? 0, icon: PackageOpen, href: "/admin/orders?status=processing" },
+        { label: "נשלחו / נמסרו", value: done?.count ?? 0, icon: Truck, href: "/admin/orders?status=shipped" },
+        { label: "ממתינות לתשלום", value: unpaid?.count ?? 0, icon: Clock, href: "/admin/orders?status=pending_payment" },
       ]
     : [];
-  if (lowStock) cards.push(["התראות מלאי", lowStock.count ?? 0]);
-  if (customers?.data) cards.push(["לקוחות חדשים (30 יום)", (customers.data as unknown as { total: number }).total]);
-  if (abandoned?.data) cards.push(["סלים נטושים", (abandoned.data as unknown as unknown[]).length]);
-  if (r14) cards.push(["ממוצע הזמנה (14 יום)", formatPrice(r14.aov)]);
+  if (lowStock) cards.push({ label: "התראות מלאי", value: lowStock.count ?? 0, icon: AlertTriangle, href: "/admin/inventory", tone: (lowStock.count ?? 0) > 0 ? "alert" : undefined });
+  if (customers?.data) cards.push({ label: "לקוחות חדשים (30 יום)", value: (customers.data as unknown as { total: number }).total, icon: UserPlus, href: "/admin/customers" });
+  if (abandoned?.data) cards.push({ label: "סלים נטושים", value: (abandoned.data as unknown as unknown[]).length, icon: ShoppingCart, href: "/admin/abandoned-carts" });
+  if (r14) cards.push({ label: "ממוצע הזמנה (14 יום)", value: formatPrice(r14.aov), icon: Receipt });
 
   return (
     <>
@@ -84,12 +86,30 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
       )}
       {cards.length > 0 && (
         <dl className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-          {cards.map(([label, value]) => (
-            <Card key={label} className="p-4">
-              <dt className="text-xs font-semibold text-ink-soft">{label}</dt>
-              <dd className="mt-1.5 text-2xl font-bold tabular-nums">{value}</dd>
-            </Card>
-          ))}
+          {cards.map(({ label, value, href, icon: Icon, tone }) => {
+            const body = (
+              <>
+                <div className="flex items-start justify-between gap-2">
+                  <dt className="text-xs font-semibold text-ink-soft">{label}</dt>
+                  <span className={`grid size-8 shrink-0 place-items-center rounded-full ${tone === "alert" ? "bg-gold/25 text-brand-dark" : "bg-sand text-brand"}`}>
+                    <Icon className="size-4" strokeWidth={1.8} />
+                  </span>
+                </div>
+                <dd className="mt-1 text-2xl font-bold tabular-nums">{value}</dd>
+              </>
+            );
+            return (
+              <Card key={label} className="p-0">
+                {href ? (
+                  <Link href={href} className="block h-full rounded-2xl p-4 transition-colors hover:bg-sand/40">
+                    {body}
+                  </Link>
+                ) : (
+                  <div className="p-4">{body}</div>
+                )}
+              </Card>
+            );
+          })}
         </dl>
       )}
       {r14 && (

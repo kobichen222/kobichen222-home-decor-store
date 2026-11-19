@@ -6,7 +6,23 @@ import * as React from "react";
 import { Drawer } from "@/components/ui/drawer";
 import { signOut } from "@/features/admin/auth-actions";
 import { cn } from "@/lib/utils";
+import {
+  BarChart3, BookOpen, Boxes, Briefcase, Building2, FileText, FolderTree, Gauge, HelpCircle, History, Home, Image as ImageIcon, Images,
+  KeyRound, Layers, LineChart, Megaphone, MessageSquareQuote, PackageSearch, Percent, Repeat, RotateCcw, Settings, ShoppingBag, ShoppingCart,
+  Tag, Tags, Ticket, Truck, Upload, Users, UserCog, type LucideIcon,
+} from "lucide-react";
 import { ADMIN_NAV } from "./nav";
+
+// Menu icons, by page. Kept here (a client file) so the nav data stays plain.
+const ICONS: Record<string, LucideIcon> = {
+  "/admin": Gauge, "/admin/orders": ShoppingBag, "/admin/customers": Users, "/admin/business-accounts": Building2, "/admin/quotes": Briefcase,
+  "/admin/returns": RotateCcw, "/admin/products": PackageSearch, "/admin/categories": FolderTree, "/admin/collections": Layers, "/admin/brands": Tag,
+  "/admin/inventory": Boxes, "/admin/media": Images, "/admin/coupons": Ticket, "/admin/promotions": Percent, "/admin/abandoned-carts": ShoppingCart,
+  "/admin/leads": Megaphone, "/admin/home": Home, "/admin/pages": FileText, "/admin/banners": ImageIcon, "/admin/blog": BookOpen,
+  "/admin/blog-categories": Tags, "/admin/reviews": MessageSquareQuote, "/admin/faqs": HelpCircle, "/admin/redirects": Repeat,
+  "/admin/reports": BarChart3, "/admin/reports/products": LineChart, "/admin/import-export": Upload, "/admin/settings": Settings,
+  "/admin/shipping": Truck, "/admin/users": UserCog, "/admin/audit-log": History, "/admin/security": KeyRound,
+};
 import { NotificationsBell } from "./notifications-bell";
 
 // No route-level skeleton in the admin: a fallback would be held on screen
@@ -38,22 +54,26 @@ function Nav({ permissions, onNavigate }: { permissions: string[]; onNavigate?: 
           <div key={group.title}>
             <p className="mb-1.5 px-3 text-xs font-bold tracking-wide text-ink-soft">{group.title}</p>
             <ul>
-              {items.map((item) => (
+              {items.map((item) => {
+                const Icon = ICONS[item.href];
+                return (
                 <li key={item.href}>
                   <Link
                     href={item.href}
                     onClick={onNavigate}
                     aria-current={item.href === activeHref ? "page" : undefined}
                     className={cn(
-                      "flex items-center rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
-                      item.href === activeHref ? "bg-ink text-cream" : "hover:bg-sand",
+                      "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
+                      item.href === activeHref ? "bg-ink text-cream" : "text-ink/85 hover:bg-sand",
                     )}
                   >
+                    {Icon && <Icon className={cn("size-4 shrink-0", item.href === activeHref ? "text-gold" : "text-ink-soft")} strokeWidth={1.8} />}
                     {item.label}
                     <PendingHint />
                   </Link>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           </div>
         );
