@@ -222,10 +222,10 @@ export function CheckoutForm({ options, prefill }: { options: ShippingOption[]; 
               {formatPrice(summary.total)}
             </dd>
           </div>
-          <p className="text-xs text-ink-soft">
+        </dl>
+        <p className="text-xs text-ink-soft">
             כולל מע״מ ({summary.vat_rate}%): {formatPrice(summary.vat_amount)}
           </p>
-        </dl>
         <label className="flex items-start gap-2.5 text-sm">
           <input type="checkbox" name="terms" className="mt-1 size-4 accent-[var(--color-brand)]" aria-invalid={!!e.terms} />
           <span>

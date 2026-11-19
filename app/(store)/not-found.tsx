@@ -13,7 +13,7 @@ export default async function NotFound() {
         <span className="mx-auto grid size-16 place-items-center rounded-full bg-sand text-gold">
           <Compass className="size-8" strokeWidth={1.3} />
         </span>
-        <p className="mt-6 text-sm font-semibold tracking-[0.24em] text-gold">שגיאה 404</p>
+        <p className="mt-6 text-sm font-semibold tracking-[0.24em] text-gold-ink">שגיאה 404</p>
         <h1 className="mt-2 text-3xl font-bold sm:text-4xl">העמוד הזה לא נמצא</h1>
         <p className="mt-3 text-ink-soft">ייתכן שהקישור שגוי או שהעמוד הועבר. נסו לחפש, או המשיכו לאחת הקטגוריות.</p>
         <SearchBox className="mx-auto mt-7 max-w-md text-start" />

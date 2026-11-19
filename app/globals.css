@@ -10,6 +10,8 @@
   --color-brand: #705b4b;
   --color-brand-dark: #5a483b;
   --color-gold: #b49a76;
+  /* Gold for small text on light backgrounds (WCAG AA 4.5:1 on cream and sand). */
+  --color-gold-ink: #7f6545;
   --color-line: #e8e5e1;
   --color-danger: #a3392f;
   --color-success: #3f6b4f;

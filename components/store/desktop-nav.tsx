@@ -47,7 +47,7 @@ export function DesktopNav({ tree }: { tree: NavNode[] }) {
               </ul>
               <div className="flex flex-col justify-between rounded-xl bg-sand p-6">
                 <div>
-                  <p className="text-xs font-semibold tracking-[0.2em] text-gold">הטבה</p>
+                  <p className="text-xs font-semibold tracking-[0.2em] text-gold-ink">הטבה</p>
                   <p className="mt-2 font-display text-xl font-bold leading-snug">מבצעים חמים לזמן מוגבל</p>
                 </div>
                 <div className="mt-6 space-y-2.5 text-sm font-semibold">

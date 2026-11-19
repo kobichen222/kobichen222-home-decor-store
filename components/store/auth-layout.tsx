@@ -19,7 +19,7 @@ export function AuthLayout({ title, subtitle, children }: { title: string; subti
         </div>
         <aside className="hidden flex-col justify-center gap-7 bg-sand p-10 lg:flex" aria-label="למה כדאי חשבון">
           <div>
-            <p className="text-xs font-semibold tracking-[0.22em] text-gold">החשבון שלכם</p>
+            <p className="text-xs font-semibold tracking-[0.22em] text-gold-ink">החשבון שלכם</p>
             <p className="mt-2 font-display text-2xl font-bold leading-snug">כל מה שצריך כדי לעצב בנוחות</p>
           </div>
           <ul className="space-y-5">

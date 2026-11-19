@@ -151,7 +151,10 @@ export function CartTotals({ showShipping = false }: { showShipping?: boolean })
         </div>
       )}
       {cart.promotion && cart.promotion.discount === 0 && (
-        <p className="text-success">מבצע: {cart.promotion.name}</p>
+        <div className="flex justify-between text-success">
+          <dt>מבצע: {cart.promotion.name}</dt>
+          <dd>פעיל</dd>
+        </div>
       )}
       {showShipping ? (
         <div className="flex justify-between">
@@ -168,7 +171,10 @@ export function CartTotals({ showShipping = false }: { showShipping?: boolean })
         <dt>סה״כ</dt>
         <dd className="tabular-nums">{formatPrice(cart.total)}</dd>
       </div>
-      <p className="text-xs text-ink-soft">המחירים כוללים מע״מ</p>
+      <div className="text-xs text-ink-soft">
+        <dt className="sr-only">מע״מ</dt>
+        <dd>המחירים כוללים מע״מ</dd>
+      </div>
     </dl>
   );
 }
