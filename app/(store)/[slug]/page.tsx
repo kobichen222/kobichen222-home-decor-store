@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { PageHeader } from "@/components/store/page-header";
 import { ContactForm } from "@/components/store/contact-form";
 import { RichText } from "@/components/store/rich-text";
+import { defaultPage } from "@/features/cms/default-pages";
 import { getPage, getStoreSettings } from "@/features/cms/queries";
 import { FileText } from "lucide-react";
 import { EmptyState } from "@/components/store/empty-state";
@@ -19,7 +20,10 @@ export async function generateMetadata({ params }: PageProps<"/[slug]">): Promis
   const { slug } = await params;
   if (slug === "contact") return { title: "יצירת קשר", alternates: { canonical: "/contact" } };
   const page = await getPage(slug);
-  if (!page) return {};
+  if (!page) {
+    const fallback = defaultPage(slug, (await getStoreSettings()).business);
+    return fallback ? { title: fallback.title, description: fallback.description, alternates: { canonical: `/${slug}` } } : {};
+  }
   return {
     title: page.seo_title ?? page.title,
     description: page.seo_description ?? undefined,
@@ -59,7 +63,9 @@ async function Contact() {
 
 async function Content({ params }: PageProps<"/[slug]">) {
   const { slug } = await params;
-  const page = slug === "home" ? null : await getPage(slug);
+  const stored = slug === "home" ? null : await getPage(slug);
+  const builtIn = stored ? null : defaultPage(slug, (await getStoreSettings()).business);
+  const page = stored ?? (builtIn && { title: builtIn.title, body: builtIn.body });
   if (!page && slug !== "contact") return redirectOrNotFound(`/${slug}`);
   const title = page?.title ?? "יצירת קשר";
   return (

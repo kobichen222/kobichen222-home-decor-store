@@ -7,8 +7,8 @@ import { Drawer } from "@/components/ui/drawer";
 import { signOut } from "@/features/admin/auth-actions";
 import { cn } from "@/lib/utils";
 import {
-  BarChart3, BookOpen, Boxes, Briefcase, Building2, FileText, FolderTree, Gauge, HelpCircle, History, Home, Image as ImageIcon, Images,
-  KeyRound, Layers, LineChart, Megaphone, MessageSquareQuote, PackageSearch, Percent, Repeat, RotateCcw, Settings, ShoppingBag, ShoppingCart,
+  BarChart3, BookOpen, Bug, Boxes, Briefcase, Building2, FileText, FolderTree, Gauge, HelpCircle, History, Home, Image as ImageIcon, Images,
+  KeyRound, Layers, MapPinned, LineChart, Megaphone, MessageSquareQuote, PackageSearch, Percent, Repeat, RotateCcw, Settings, ShoppingBag, ShoppingCart,
   Tag, Tags, Ticket, Truck, Upload, Users, UserCog, type LucideIcon,
 } from "lucide-react";
 import { ADMIN_NAV } from "./nav";
@@ -21,7 +21,7 @@ const ICONS: Record<string, LucideIcon> = {
   "/admin/leads": Megaphone, "/admin/home": Home, "/admin/pages": FileText, "/admin/banners": ImageIcon, "/admin/blog": BookOpen,
   "/admin/blog-categories": Tags, "/admin/reviews": MessageSquareQuote, "/admin/faqs": HelpCircle, "/admin/redirects": Repeat,
   "/admin/reports": BarChart3, "/admin/reports/products": LineChart, "/admin/import-export": Upload, "/admin/settings": Settings,
-  "/admin/shipping": Truck, "/admin/users": UserCog, "/admin/audit-log": History, "/admin/security": KeyRound,
+  "/admin/shipping": Truck, "/admin/shipping-zones": MapPinned, "/admin/users": UserCog, "/admin/audit-log": History, "/admin/errors": Bug, "/admin/security": KeyRound,
 };
 import { NotificationsBell } from "./notifications-bell";
 

@@ -49,7 +49,7 @@ function fieldSchema(f: FieldDef): z.ZodType | null {
     }
     case "tags":
       return z.preprocess(
-        (v) => (typeof v === "string" ? [...new Set(v.split(",").map((t) => t.trim()).filter(Boolean))].slice(0, 20) : []),
+        (v) => (typeof v === "string" ? [...new Set(v.split(",").map((t) => t.trim()).filter(Boolean))].slice(0, f.max ?? 20) : []),
         z.array(z.string().max(40)),
       );
     default:

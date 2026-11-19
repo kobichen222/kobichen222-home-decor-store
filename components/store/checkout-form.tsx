@@ -6,7 +6,7 @@ import { StoreImage } from "@/components/shared/store-image";
 import { Button } from "@/components/ui/button";
 import { SecureNote } from "./cart-lines";
 import { Field, Input, Textarea } from "@/components/ui/field";
-import { placeOrder } from "@/features/checkout/actions";
+import { placeOrder, quoteForCity } from "@/features/checkout/actions";
 import type { CartSummary } from "@/features/cart/types";
 import { useFormAction } from "@/lib/use-form-action";
 import { cn, formatPrice } from "@/lib/utils";
@@ -42,8 +42,29 @@ export function CheckoutForm({ options, prefill }: { options: ShippingOption[]; 
   const { state, pending, onSubmit } = useFormAction(placeOrder);
   const [methodId, setMethodId] = React.useState(options[0]?.id ?? "");
   const [type, setType] = React.useState<"private" | "business">("private");
+  // Prices per method, re-quoted on the server when the delivery city
+  // changes (some cities carry a remote-area surcharge).
+  const [quotes, setQuotes] = React.useState<Record<string, CartSummary>>(() => Object.fromEntries(options.map((o) => [o.id, o.summary])));
+  const [quoting, setQuoting] = React.useState(false);
+  const cityTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastCity = React.useRef<string | null>(null);
+  const requote = (city: string) => {
+    if (cityTimer.current) clearTimeout(cityTimer.current);
+    cityTimer.current = setTimeout(async () => {
+      const value = city.trim();
+      if (value === lastCity.current) return;
+      lastCity.current = value;
+      setQuoting(true);
+      const fresh = await quoteForCity(value).catch(() => null);
+      if (fresh) setQuotes((q) => ({ ...q, ...Object.fromEntries(fresh.map((f) => [f.id, f.summary])) }));
+      setQuoting(false);
+    }, 450);
+  };
+  React.useEffect(() => {
+    if (prefill?.address?.city) requote(prefill.address.city);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const option = options.find((o) => o.id === methodId) ?? options[0];
-  const summary = option.summary;
+  const summary = quotes[option.id] ?? option.summary;
   const e = state?.errors ?? {};
 
   return (
@@ -128,7 +149,7 @@ export function CheckoutForm({ options, prefill }: { options: ShippingOption[]; 
                       {o.delivery_days_min && ` · ${o.delivery_days_min}–${o.delivery_days_max} ימי עסקים`}
                     </span>
                   </span>
-                  <span className="font-semibold tabular-nums">{o.summary.shipping > 0 ? formatPrice(o.summary.shipping) : "חינם"}</span>
+                  <span className="font-semibold tabular-nums">{(quotes[o.id] ?? o.summary).shipping > 0 ? formatPrice((quotes[o.id] ?? o.summary).shipping) : "חינם"}</span>
                 </label>
               ))}
             </div>
@@ -138,7 +159,15 @@ export function CheckoutForm({ options, prefill }: { options: ShippingOption[]; 
           {option.requires_address && (
             <div className="mt-6 grid grid-cols-6 gap-4">
               <Field label="עיר" htmlFor="city" required error={e.city} className="col-span-6 sm:col-span-3">
-                <Input id="city" name="city" defaultValue={prefill?.address?.city ?? undefined} autoComplete="address-level2" aria-invalid={!!e.city} />
+                <Input
+                  id="city"
+                  name="city"
+                  defaultValue={prefill?.address?.city ?? undefined}
+                  autoComplete="address-level2"
+                  aria-invalid={!!e.city}
+                  onChange={(ev) => requote(ev.target.value)}
+                  onBlur={(ev) => requote(ev.target.value)}
+                />
               </Field>
               <Field label="רחוב" htmlFor="street" required error={e.street} className="col-span-6 sm:col-span-3">
                 <Input id="street" name="street" defaultValue={prefill?.address?.street ?? undefined} autoComplete="address-line1" aria-invalid={!!e.street} />
@@ -214,11 +243,17 @@ export function CheckoutForm({ options, prefill }: { options: ShippingOption[]; 
           )}
           <div className="flex justify-between">
             <dt className="text-ink-soft">{option.name}</dt>
-            <dd className="tabular-nums">{summary.shipping > 0 ? formatPrice(summary.shipping) : "חינם"}</dd>
+            <dd className={cn("tabular-nums transition-opacity", quoting && "opacity-50")}>{summary.shipping > 0 ? formatPrice(summary.shipping) : "חינם"}</dd>
           </div>
+          {(summary.zone_surcharge ?? 0) > 0 && (
+            <div className="flex justify-between text-xs text-ink-soft">
+              <dt>כולל תוספת משלוח לאזור {summary.zone_name}</dt>
+              <dd className="tabular-nums">{formatPrice(summary.zone_surcharge ?? 0)}</dd>
+            </div>
+          )}
           <div className="flex justify-between border-t border-line pt-3 text-lg font-bold">
             <dt>סה״כ לתשלום</dt>
-            <dd className="tabular-nums" data-testid="checkout-total">
+            <dd className={cn("tabular-nums transition-opacity", quoting && "opacity-50")} data-testid="checkout-total" aria-live="polite">
               {formatPrice(summary.total)}
             </dd>
           </div>

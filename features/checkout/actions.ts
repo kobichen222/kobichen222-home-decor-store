@@ -2,7 +2,8 @@
 import { randomUUID } from "node:crypto";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { readCartId } from "@/features/cart/server";
+import { readCartId, summarize } from "@/features/cart/server";
+import type { CartSummary } from "@/features/cart/types";
 import { getCustomer } from "@/lib/auth/customer";
 import { getPaymentProvider, isMockPayments } from "@/lib/payments";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -24,6 +25,21 @@ function orderErrorMessage(raw: string): string {
   if (code === "ITEM_UNAVAILABLE") return `המוצר ״${detail}״ אינו זמין עוד. הסירו אותו מהסל ונסו שוב.`;
   if (code === "COUPON_INVALID") return `הקופון אינו תקף: ${detail}`;
   return DB_ERRORS[code] ?? "לא הצלחנו ליצור את ההזמנה. נסו שוב בעוד רגע.";
+}
+
+/**
+ * Remembers the delivery city on the cart (for shipping-zone surcharges)
+ * and re-prices every active shipping method for it. Errors from an older
+ * database without zones are ignored: prices then stay without surcharge.
+ */
+export async function quoteForCity(city: string): Promise<{ id: string; summary: CartSummary }[] | null> {
+  const cartId = await readCartId();
+  const parsed = z.string().trim().max(80).safeParse(city);
+  if (!cartId || !parsed.success) return null;
+  const db = createServiceClient();
+  await db.from("carts").update({ shipping_city: parsed.data || null }).eq("id", cartId);
+  const { data: methods } = await db.from("shipping_methods").select("id").eq("is_active", true).order("sort_order");
+  return Promise.all((methods ?? []).map(async (m) => ({ id: m.id, summary: await summarize(cartId, m.id) })));
 }
 
 export async function placeOrder(_prev: CheckoutState, formData: FormData): Promise<CheckoutState> {
@@ -64,6 +80,9 @@ export async function placeOrder(_prev: CheckoutState, formData: FormData): Prom
   // the same; doing it here too means a shopper is never blocked by an
   // expired reservation, however often the job runs.
   await db.rpc("release_expired_orders");
+
+  // The order is priced for the city it ships to (shipping-zone surcharge).
+  await db.from("carts").update({ shipping_city: method.requires_address ? v.city : null }).eq("id", cartId);
 
   // Prices, discounts, shipping and the total are computed inside the
   // database from the catalog. Nothing price-related comes from the form.

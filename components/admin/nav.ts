@@ -61,8 +61,10 @@ export const ADMIN_NAV: NavGroup[] = [
     items: [
       { label: "פרטי החנות", href: "/admin/settings", permissions: ["settings.manage"] },
       { label: "משלוחים", href: "/admin/shipping", permissions: ["shipping.manage"] },
+      { label: "אזורי משלוח", href: "/admin/shipping-zones", permissions: ["shipping.manage"] },
       { label: "משתמשים והרשאות", href: "/admin/users", permissions: ["users.manage"] },
       { label: "יומן פעילות", href: "/admin/audit-log", permissions: ["settings.manage", "users.manage"] },
+      { label: "יומן תקלות", href: "/admin/errors", permissions: ["settings.manage"] },
       { label: "אבטחת החשבון (2FA)", href: "/admin/security" },
     ],
   },

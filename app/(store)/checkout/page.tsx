@@ -8,6 +8,7 @@ import { CheckoutSteps } from "@/components/store/checkout-steps";
 import { PageHeader } from "@/components/store/page-header";
 import { readCartId, summarize, syncCartOwner } from "@/features/cart/server";
 import { createPublicClient } from "@/lib/supabase/public";
+import { createServiceClient } from "@/lib/supabase/service";
 
 export const metadata: Metadata = { title: "קופה", robots: { index: false } };
 
@@ -17,16 +18,6 @@ async function Checkout() {
   const base = await summarize(cartId);
   if (!cartId || base.items.length === 0 || base.items.some((i) => !i.purchasable)) redirect("/cart");
 
-  const { data: methods } = await createPublicClient()
-    .from("shipping_methods")
-    .select("id, name, description, requires_address, delivery_days_min, delivery_days_max")
-    .order("sort_order");
-  // Totals are priced on the server once per shipping method, so switching
-  // method in the form shows exact amounts without trusting the browser.
-  const options: ShippingOption[] = await Promise.all(
-    (methods ?? []).map(async (m) => ({ ...m, summary: await summarize(cartId, m.id) })),
-  );
-  if (!options.length) throw new Error("No active shipping methods are configured");
   // A signed-in shopper starts with their details and default address.
   let prefill: CheckoutPrefill = null;
   const customer = await getCustomer();
@@ -38,6 +29,18 @@ async function Checkout() {
     ]);
     prefill = { name: profile?.full_name ?? undefined, phone: profile?.phone ?? undefined, email: customer.email, address };
   }
+  // Price for the city we know (or none yet); the form re-quotes as it changes.
+  await createServiceClient().from("carts").update({ shipping_city: prefill?.address?.city ?? null }).eq("id", cartId);
+  const { data: methods } = await createPublicClient()
+    .from("shipping_methods")
+    .select("id, name, description, requires_address, delivery_days_min, delivery_days_max")
+    .order("sort_order");
+  // Totals are priced on the server once per shipping method, so switching
+  // method in the form shows exact amounts without trusting the browser.
+  const options: ShippingOption[] = await Promise.all(
+    (methods ?? []).map(async (m) => ({ ...m, summary: await summarize(cartId, m.id) })),
+  );
+  if (!options.length) throw new Error("No active shipping methods are configured");
   return <CheckoutForm options={options} prefill={prefill} />;
 }
 

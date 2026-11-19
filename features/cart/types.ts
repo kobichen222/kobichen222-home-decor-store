@@ -29,6 +29,9 @@ export type CartSummary = {
   business_percent?: number;
   coupon: { code: string; valid: boolean; message?: string; kind?: string; description?: string | null } | null;
   shipping: number;
+  /** Remote-area surcharge included in `shipping` (shipping zones). */
+  zone_surcharge?: number;
+  zone_name?: string | null;
   shipping_method: { id: string; name: string; kind: string; requires_address: boolean } | null;
   total: number;
   vat_rate: number;

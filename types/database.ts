@@ -307,14 +307,14 @@ isOneToOne: false
                   ]
                 },"carts": {
                   Row: {
-                    "coupon_code": string | null,"created_at": string,"email": string | null,"id": string,"reminder_sent_at": string | null,"status": string,"token": string,"updated_at": string,"user_id": string | null
+                    "coupon_code": string | null,"created_at": string,"email": string | null,"id": string,"reminder_sent_at": string | null,"shipping_city": string | null,"status": string,"token": string,"updated_at": string,"user_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "coupon_code"?: string | null,"created_at"?: string,"email"?: string | null,"id"?: string,"reminder_sent_at"?: string | null,"status"?: string,"token"?: string,"updated_at"?: string,"user_id"?: string | null
+                    "coupon_code"?: string | null,"created_at"?: string,"email"?: string | null,"id"?: string,"reminder_sent_at"?: string | null,"shipping_city"?: string | null,"status"?: string,"token"?: string,"updated_at"?: string,"user_id"?: string | null
                   }
                   Update: {
-                    "coupon_code"?: string | null,"created_at"?: string,"email"?: string | null,"id"?: string,"reminder_sent_at"?: string | null,"status"?: string,"token"?: string,"updated_at"?: string,"user_id"?: string | null
+                    "coupon_code"?: string | null,"created_at"?: string,"email"?: string | null,"id"?: string,"reminder_sent_at"?: string | null,"shipping_city"?: string | null,"status"?: string,"token"?: string,"updated_at"?: string,"user_id"?: string | null
                   }
                   Relationships: [
                     
@@ -1673,6 +1673,9 @@ isOneToOne: false
 "my_permissions":
 { Args: Record<PropertyKey, never>; Returns: (string)[]
                            },
+"normalize_city":
+{ Args: { "p": string }; Returns: string
+                           },
 "popular_searches":
 { Args: { "p_limit"?: number }; Returns: string[]
                            },
@@ -1693,6 +1696,11 @@ isOneToOne: false
                            },
 "report_sales":
 { Args: { "p_from": string,"p_to": string }; Returns: Json
+                           },
+"shipping_zone_for":
+{ Args: { "p_city": string }; Returns: {
+              "name": string,"surcharge": number
+            }[]
                            },
 "store_setting":
 { Args: { "p_key": string }; Returns: Json

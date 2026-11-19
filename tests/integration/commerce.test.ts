@@ -68,6 +68,34 @@ describe("pricing is computed by the server", () => {
   });
 });
 
+describe("shipping zones", () => {
+  it("adds the zone surcharge to home delivery, also when shipping is free, and charges it on the order", async () => {
+    const { data: zone } = await service.from("shipping_zones").insert({ name: "בדיקת אזור", cities: ["עיר-בדיקה"], surcharge: 40 }).select("id").single();
+    try {
+      const big = await variant("ART-1001-03"); // above the free-shipping threshold
+      const cartId = await cartWith([[big.id, 2]]);
+      await service.from("carts").update({ shipping_city: " עיר בדיקה " }).eq("id", cartId);
+      const { data } = await service.rpc("cart_summary", { p_cart_id: cartId, p_shipping_method_id: methods.home });
+      const s = data as { shipping: number; zone_surcharge: number; zone_name: string; total: number; subtotal: number };
+      expect(s.zone_surcharge).toBe(40);
+      expect(s.zone_name).toBe("בדיקת אזור");
+      expect(s.shipping).toBe(40); // free delivery + 40 surcharge
+      expect(s.total).toBe(s.subtotal + 40);
+
+      const { data: pickup } = await service.rpc("cart_summary", { p_cart_id: cartId, p_shipping_method_id: methods.pickup });
+      expect((pickup as { zone_surcharge: number }).zone_surcharge).toBe(0);
+
+      const res = await order(cartId);
+      expect(res.error).toBeNull();
+      const { data: o } = await service.from("orders").select("shipping_total, total").eq("id", (res.data as { order_id: string }).order_id).single();
+      expect(Number(o!.shipping_total)).toBe(40);
+      await service.rpc("fail_order_payment", { p_order_id: (res.data as { order_id: string }).order_id, p_provider: "test" });
+    } finally {
+      await service.from("shipping_zones").delete().eq("id", zone!.id);
+    }
+  });
+});
+
 describe("inventory can never be oversold", () => {
   it("lets exactly the available units through under concurrent checkouts", async () => {
     const oak = await variant("CLK-2002-01");

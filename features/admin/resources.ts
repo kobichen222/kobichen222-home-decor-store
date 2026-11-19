@@ -419,6 +419,29 @@ export const RESOURCES: Record<string, Resource> = {
     canCreate: true,
     canDelete: true,
   },
+  "shipping-zones": {
+    key: "shipping-zones",
+    title: "אזורי משלוח",
+    singular: "אזור משלוח",
+    newLabel: "אזור חדש",
+    description: "תוספת למחיר משלוח עד הבית לערים מרוחקות (למשל אילת). התוספת מחושבת בשרת לפי העיר שהלקוח מזין בקופה, ומתווספת גם כשהמשלוח עצמו חינם.",
+    table: "shipping_zones",
+    permission: "shipping.manage",
+    fields: [
+      { name: "name", label: "שם האזור", kind: "text", required: true, max: 60 },
+      { name: "surcharge", label: "תוספת למשלוח (₪)", kind: "money", required: true, default: 0 },
+      { name: "cities", label: "ערים באזור", kind: "tags", max: 300, wide: true, hint: "שמות ערים מופרדים בפסיקים. רווחים, מקפים וגרשיים לא משנים; כתיב שונה (קרית / קריית) יש לרשום בשתי הצורות." },
+      active("פעיל"),
+    ],
+    columns: [
+      { name: "name", label: "אזור" },
+      { name: "surcharge", label: "תוספת", kind: "money" },
+      { name: "is_active", label: "סטטוס", kind: "bool" },
+    ],
+    order: [{ column: "name", ascending: true }],
+    canCreate: true,
+    canDelete: true,
+  },
 };
 
 // Added after the initial set: moderation, FAQs, redirects.
